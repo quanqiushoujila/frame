@@ -1,6 +1,6 @@
-import Vue from 'vue'
+// import Vue from 'vue'
 import axios from 'axios'
-import router from '@/router'
+// import router from '@/router'
 import qs from 'qs'
 import merge from 'lodash/merge'
 
@@ -12,29 +12,42 @@ const http = axios.create({
   }
 })
 
-/**
- * 请求拦截
- */
-http.interceptors.request.use(config => {
-  config.headers['token'] = Vue.cookie.get('token') // 请求头带上token
+// 请求拦截器
+http.interceptors.request.use(function (config) {
   return config
-}, error => {
+}, function (error) {
+  return Promise.reject(error)
+})
+// 响应拦截器
+http.interceptors.response.use(function (response) {
+  return response
+}, function (error) {
   return Promise.reject(error)
 })
 
 /**
+ * 请求拦截
+ */
+// http.interceptors.request.use(config => {
+//   config.headers['token'] = Vue.cookie.get('token') // 请求头带上token
+//   return config
+// }, error => {
+//   return Promise.reject(error)
+// })
+
+/**
  * 响应拦截
  */
-http.interceptors.response.use(response => {
-  if (response.data && response.data.code === 401) { // 401, token失效
-    Vue.cookie.delete('token')
-    router.options.isAddDynamicMenuRoutes = false
-    router.push({ name: 'login' })
-  }
-  return response
-}, error => {
-  return Promise.reject(error)
-})
+// http.interceptors.response.use(response => {
+//   if (response.data && response.data.code === 401) { // 401, token失效
+//     Vue.cookie.delete('token')
+//     router.options.isAddDynamicMenuRoutes = false
+//     router.push({ name: 'login' })
+//   }
+//   return response
+// }, error => {
+//   return Promise.reject(error)
+// })
 
 /**
  * 请求地址处理

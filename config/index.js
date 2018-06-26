@@ -13,7 +13,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: devEnv.OPEN_PROXY === false ? {} : {
       '/api': {
-        target: 'localhost:8080',
+        target: 'http://demo.renren.io/renren-fast/',
         changeOrigin: true,
         pathRewrite: {
           '^/api': '/'
