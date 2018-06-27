@@ -37,10 +37,8 @@ vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-
 │   │   │   └── _global.js                       // 全局变量
 │   │   ├── mixin                                // vue mixin文件 
 │   │   └── util                                 // 公共方法
-│   │       ├── array.js                         // 数组方法
 │   │       ├── httpRequest.js                   // 数据请求方法
 │   │       ├── index.js                         // 其他方法
-│   │       ├── object.js                        // object方法
 │   │       └── validate.js                      // 验证方法
 │   ├── mock                                     // 模拟数据文件
 │   ├── page                                     // 页面
