@@ -37,7 +37,8 @@
 </template>
 
 <script>
-import { getUUID } from 'js/util'
+// import { getUUID } from 'js/util'
+import { login } from 'js/api'
 export default {
   data () {
     return {
@@ -62,16 +63,14 @@ export default {
     }
   },
   created () {
-    this.getCaptcha()
+    // this.getCaptcha()
     this.init()
   },
   methods: {
     init () {
-      const url = 'http://123.com/sys/logout'
-      this.$http({
-        url: url,
-        method: 'post'
-      }).then(({data}) => {
+      const url = this.$http.adornUrl('/sys/login')
+      const method = 'post'
+      login({url, method}).then((data) => {
         console.log(data)
       })
     },
@@ -93,18 +92,18 @@ export default {
               this.$cookie.set('token', data.token)
               this.$router.replace({ name: 'main' })
             } else {
-              this.getCaptcha()
+              // this.getCaptcha()
               this.$message.error(data.msg)
             }
           })
         }
       })
-    },
-    // 获取验证码
-    getCaptcha () {
-      this.dataForm.uuid = getUUID()
-      this.captchaPath = this.$http.adornUrl(`captcha.jpg?uuid=${this.dataForm.uuid}`)
     }
+    // 获取验证码
+    // getCaptcha () {
+    //   this.dataForm.uuid = getUUID()
+    //   this.captchaPath = this.$http.adornUrl(`captcha.jpg?uuid=${this.dataForm.uuid}`)
+    // }
   }
 }
 </script>

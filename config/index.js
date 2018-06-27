@@ -3,7 +3,6 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
-const devEnv = require('./dev.env')
 
 module.exports = {
   dev: {
@@ -11,12 +10,12 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: devEnv.OPEN_PROXY === false ? {} : {
+    proxyTable: {
       '/api': {
-        target: 'http://demo.renren.io/renren-fast/',
+        target: 'http://localhost:80',
         changeOrigin: true,
         pathRewrite: {
-          '^/api': '/'
+          '^/api': '/json'
         }
       }
     },
@@ -65,7 +64,7 @@ module.exports = {
      * Source Maps
      */
 
-    productionSourceMap: true,
+    productionSourceMap: false,
     // https://webpack.js.org/configuration/devtool/#production
     devtool: '#source-map',
 
@@ -73,7 +72,7 @@ module.exports = {
     // Surge or Netlify already gzip all static assets for you.
     // Before setting to `true`, make sure to:
     // npm install --save-dev compression-webpack-plugin
-    productionGzip: false,
+    productionGzip: true,
     productionGzipExtensions: ['js', 'css'],
 
     // Run the build command with an extra argument to

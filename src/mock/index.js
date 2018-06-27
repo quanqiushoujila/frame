@@ -46,7 +46,6 @@ function fnCreate (mod, isOpen = true) {
   } else {
     for (let key in mod) {
       ((res) => {
-        console.log('http://123.com' + res.url)
         Mock.mock('http://123.com' + res.url, res.type, res.data)
       })(mod[key]() || {})
     }

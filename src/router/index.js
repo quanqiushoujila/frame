@@ -14,6 +14,8 @@ export default new Router({
     { path: '/404', name: '404', component: () => import('page/common/404') },
     // 主页
     { path: '/main', name: 'main', component: () => import('page/common/main') },
+    // 图标
+    { path: '/icon', name: 'icon', component: () => import('page/common/icon') },
     { path: '*', redirect: '/404' }
   ]
 })
