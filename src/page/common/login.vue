@@ -37,8 +37,7 @@
 </template>
 
 <script>
-// import { getUUID } from 'js/util'
-import { login } from 'js/api'
+import { login, city } from 'js/api'
 export default {
   data () {
     return {
@@ -65,12 +64,11 @@ export default {
   created () {
     // this.getCaptcha()
     this.init()
+    city({name: 'jock', arr: [1, 2]})
   },
   methods: {
     init () {
-      const url = this.$http.adornUrl('/sys/login')
-      const method = 'post'
-      login({url, method}).then((data) => {
+      login().then((data) => {
         console.log(data)
       })
     },
