@@ -46,14 +46,18 @@ function request ({url, method = 'post', data = {}, contentType = 'json', respon
 /**
  * 登录
  * @param  {[type]} options.url    [url路劲]
- * @param  {String} options.method [属性]
- * @param  {Object} options.data   [数据]
- * @param  {String} responseType}  [数据类型]
  * @return {[type]}                [description]
  */
 export const login = (data) => {
-  const url = $http.adornUrl('/sys/login')
+  const url = $http.adornUrl('/login')
   const method = 'post'
+
+  return request({url, method, data})
+}
+
+export const mainIndex = (data) => {
+  const url = $http.adornUrl('/mainIndex')
+  const method = 'get'
 
   return request({url, method, data})
 }

@@ -12,6 +12,7 @@ import httpRequest from 'js/util/httpRequest'
 import _global from 'js/config/_global'
 
 import 'normalize.css'
+import 'scss/index.scss'
 import 'element-ui/lib/theme-chalk/index.css'
 import 'css/iconfont.css'
 

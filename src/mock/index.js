@@ -7,6 +7,7 @@ import * as sysLog from './modules/sys-log'
 import * as sysMenu from './modules/sys-menu'
 import * as sysRole from './modules/sys-role'
 import * as sysUser from './modules/sys-user'
+import * as nav from './modules/nav'
 
 // tips
 // 1. 开启/关闭[业务模块]拦截, 通过调用fnCreate方法[isOpen参数]设置.
@@ -19,6 +20,7 @@ fnCreate(sysLog, false)
 fnCreate(sysMenu, false)
 fnCreate(sysRole, false)
 fnCreate(sysUser, false)
+fnCreate(nav, false)
 
 // const BASE_URL = 'http://123.com'
 

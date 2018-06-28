@@ -1,6 +1,10 @@
 export default {
   namespaced: true,
   state: {
+    // 全屏遮罩
+    fullscreenLoading: false,
+    // 遮罩颜色
+    loadingBackground: 'rgba(0, 0, 0, 0.5)',
     // 页面文档可视高度(随窗口改变大小)
     documentClientHeight: 0,
     // 导航条, 布局风格, defalut(默认) / inverse(反向)
@@ -17,6 +21,9 @@ export default {
     mainTabsActiveName: ''
   },
   mutations: {
+    updateFullscreenLoading (state, val) {
+      state.fullscreenLoading = val
+    },
     updateDocumentClientHeight (state, height) {
       state.documentClientHeight = height
     },
