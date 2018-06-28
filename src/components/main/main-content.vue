@@ -1,11 +1,17 @@
 <template>
-  <div></div>
+  <div class="main-content"></div>
 </template>
 <script>
 export default {
-  name: ''
+  name: 'mainContent'
 }
 </script>
 
 <style lang="scss" scoped>
+  @import "~scss/varibles.scss";
+  .main-content {
+    position: relative;
+    margin-left: $navWidth;
+    padding-top: $headerHeight;
+  }
 </style>

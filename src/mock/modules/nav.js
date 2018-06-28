@@ -1,25 +1,56 @@
 const navList = [
-  {id: '1', name: '资产普查', icon: 'icon-jianchajihua'},
-  {id: '2', name: '数据目录', icon: 'icon-mulu1'},
-  {id: '3', name: '业务事项', icon: 'icon-yewu'},
-  {id: '4', name: '数源认责', icon: 'icon-duijie'},
-  {id: '5', name: '数据治理', icon: 'icon-biaozhun'},
-  {id: '6', name: '数据标签', icon: 'icon-biaoqian'},
-  {id: '7', name: '服务注册', icon: 'icon-zhuce'},
-  {id: '8', name: '信息采集', icon: 'icon-xinxicaiji'},
-  {id: '9', name: '项目管理', icon: 'icon-xiangmu'},
-  {id: '10', name: '系统配置', icon: 'icon-kaohejilu'}
+  {id: '1', name: '资产普查', remarks: 'icon-jianchajihua'},
+  {id: '2', name: '数据目录', remarks: 'icon-mulu1'},
+  {id: '3', name: '业务事项', remarks: 'icon-yewu'},
+  {id: '4', name: '数源认责', remarks: 'icon-duijie'},
+  {id: '5', name: '数据治理', remarks: 'icon-biaozhun'},
+  {id: '6', name: '数据标签', remarks: 'icon-biaoqian'},
+  {id: '7', name: '服务注册', remarks: 'icon-zhuce'},
+  {id: '8', name: '信息采集', remarks: 'icon-xinxicaiji'},
+  {id: '9', name: '项目管理', remarks: 'icon-xiangmu'},
+  {id: '10', name: '系统配置', remarks: 'icon-kaohejilu'}
+]
+
+const navList10 = [
+  {
+    id: 1,
+    name: '系统配置',
+    icon: 'icon-houtaiguanli',
+    children: [
+      {id: 2, name: '菜单管理', icon: 'icon-dianziqianzhang'},
+      {id: 3, name: '角色管理', icon: 'icon-jiaoseguanli'}
+    ]
+  },
+  {
+    id: 4,
+    name: '系统监控',
+    icon: 'icon-houtaiguanli',
+    children: [
+      {id: 5, name: '操作日志', icon: 'icon-IDCjifang'}
+    ]
+  }
 ]
 
 export function mainIndex () {
   return {
-    // isOpen: false,
     url: '/mainIndex',
     type: 'get',
     data: {
       'msg': 'success',
       'code': 0,
       'data': navList
+    }
+  }
+}
+
+export function subNavList () {
+  return {
+    url: '/main',
+    type: 'get',
+    data: {
+      'msg': 'success',
+      'code': 0,
+      'data': navList10
     }
   }
 }

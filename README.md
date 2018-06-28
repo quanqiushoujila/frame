@@ -22,7 +22,8 @@ vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-
 │   │       ├── index.scss                       // scss入口
 │   │       ├── reset.scss                       // css初始化文件
 │   │       ├── varibles.scss                    // 全局样式变量文件
-│   │       └── base.scss                        // 公共样式文件
+│   │       ├── public.scss                      // 公共样式文件
+│   │       └── base.scss                        // 基础样式文件
 │   ├── components                               // 组件
 │   │       ├── main                             // 主页面组件
 │   │       │   ├── main-header.vue              // 头部

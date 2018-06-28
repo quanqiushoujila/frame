@@ -15,8 +15,8 @@
       <div class="main-index-content">
         <ul class="clearfix">
           <li v-for="item in mainNavData" :key="item.id" class="pull-left">
-            <router-link :to="'main/' + item.id">
-              <span><i class="iconfont" :class="item.icon"></i>{{item.name}}</span>
+            <router-link :to="{name: 'main', params: {navId: item.id}}" @click.native="setParentNavId(item.id)">
+              <span><i class="iconfont" :class="item.remarks"></i>{{item.name}}</span>
             </router-link>
           </li>
         </ul>
@@ -40,6 +40,10 @@ export default {
     },
     loadingBackground () {
       return this.$store.state.common.loadingBackground
+    },
+    parentNavId: {
+      get () { return this.$store.state.common.parentNavId },
+      set (val) { this.$store.commit('common/updateParentNavId', val) }
     }
   },
   created () {
@@ -58,6 +62,9 @@ export default {
         }
         this.fullscreenLoading = false
       })
+    },
+    setParentNavId (val) {
+      this.parentNavId = val
     }
   }
 }

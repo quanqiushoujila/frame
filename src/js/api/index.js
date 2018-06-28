@@ -45,26 +45,25 @@ function request ({url, method = 'post', data = {}, contentType = 'json', respon
 
 /**
  * 登录
- * @param  {[type]} options.url    [url路劲]
- * @return {[type]}                [description]
  */
 export const login = (data) => {
   const url = $http.adornUrl('/login')
   const method = 'post'
-
   return request({url, method, data})
 }
-
+/**
+ * [主菜单]
+ */
 export const mainIndex = (data) => {
   const url = $http.adornUrl('/mainIndex')
   const method = 'get'
-
   return request({url, method, data})
 }
-
-export const city = (data) => {
-  const url = '/api/city.json'
-  const method = 'post'
-  const contentType = ''
-  return request({url, method, data, contentType})
+/**
+ * [子菜单]
+ */
+export const main = (data) => {
+  const url = $http.adornUrl('/main')
+  const method = 'get'
+  return request({url, method, data})
 }
