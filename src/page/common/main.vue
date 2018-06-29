@@ -8,10 +8,6 @@
     </main-header>
     <main-menu :menuList="menuList"></main-menu>
     <main-content :style="{ 'min-height': documentClientHeight + 'px' }" class="content-wrapper">
-      <div style="height: 200px;width: 100%;background-color: #fff;"></div>
-      <keep-alive>
-        <router-view></router-view>
-      </keep-alive>
     </main-content>
   </div>
 </template>
@@ -102,6 +98,6 @@ export default {
 
 <style lang="scss" scoped>
 .content-wrapper {
-  background: #f1f4f5;
+  background: #fff;
 }
 </style>

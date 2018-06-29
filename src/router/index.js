@@ -20,7 +20,14 @@ let mainRoutes = {
   name: 'main',
   component: _import('common/main'),
   meta: { title: '主页' },
-  children: []
+  children: [],
+  beforeEnter (to, from, next) {
+    let token = Vue.cookie.get('token')
+    if (!token || !/\S/.test(token)) {
+      next({ name: 'login' })
+    }
+    next()
+  }
 }
 
 let router = new Router({
@@ -92,7 +99,9 @@ function fnAddDynamicMenuRoutes (menuList = [], routes = []) {
           iframeUrl: ''
         }
       }
+      console.log(menu.path)
       route.component = _import(menu.path)
+      // route.component = () => import(`page/${menu.path}`)
       routes.push(route)
     }
   }
@@ -102,11 +111,11 @@ function fnAddDynamicMenuRoutes (menuList = [], routes = []) {
   } else {
     mainRoutes.children = routes
     router.addRoutes([
-      mainRoutes,
-      { path: '*', redirect: { name: '404' } }
+      mainRoutes
     ])
     console.log('\n')
     console.log('%c!<-------------------- 动态(菜单)路由 s -------------------->', 'color:blue')
+    console.log(router)
     console.log(mainRoutes)
     console.log('%c!<-------------------- 动态(菜单)路由 e -------------------->', 'color:blue')
   }

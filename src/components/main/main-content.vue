@@ -1,7 +1,18 @@
 <template>
   <div class="main-content">
     <div class="main-wrapper">
-      <div style="height: 200px;width: 100%;background-color: #fff;"></div>
+      <el-tabs v-model="editableTabsValue" type="card" editable>
+        <el-tab-pane
+          :key="item.name"
+          v-for="item in editableTabs"
+          :label="item.title"
+          :name="item.name"
+        >
+          <el-card class="box-card">
+            {{item.content}}
+          </el-card>
+        </el-tab-pane>
+      </el-tabs>
       <keep-alive>
         <router-view></router-view>
       </keep-alive>
@@ -10,7 +21,21 @@
 </template>
 <script>
 export default {
-  name: 'mainContent'
+  name: 'mainContent',
+  data () {
+    return {
+      editableTabsValue: '2',
+      editableTabs: [{
+        title: 'Tab 1',
+        name: '1',
+        content: 'Tab 1 content'
+      }, {
+        title: 'Tab 2',
+        name: '2',
+        content: 'Tab 2 content'
+      }]
+    }
+  }
 }
 </script>
 
@@ -22,8 +47,8 @@ export default {
     padding-top: $headerHeight;
     .main-wrapper {
       position: relative;
-      padding: 15px;
-      background-color: #f1f4f5;
+      padding: 55px 15px 15px;
+      background-color: #fff;
       height: 100px;
     }
   }

@@ -1,10 +1,13 @@
 <template>
   <div class="main-header">
     <h1 class="logo-wrapper pull-left">
-      <router-link to="/mainIndex">
+      <router-link to="/mainIndex" class="logo-brand-lg">
         <img src="~img/logo.png" alt="logo">
         <span>数据基因</span>
       </router-link>
+      <!-- <router-link to="/mainIndex" class="logo-brand-mini">
+        <img src="~img/logo.png" alt="logo">
+      </router-link> -->
     </h1>
     <div class="header-body pull-left">
       <div class="menu-bar">
