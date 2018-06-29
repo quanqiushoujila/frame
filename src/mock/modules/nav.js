@@ -13,20 +13,20 @@ const navList = [
 
 const navList10 = [
   {
-    id: 1,
+    id: 11,
     name: '系统配置',
-    icon: 'icon-houtaiguanli',
+    icon: 'icon-shezhi1',
     children: [
-      {id: 2, name: '菜单管理', icon: 'icon-dianziqianzhang'},
-      {id: 3, name: '角色管理', icon: 'icon-jiaoseguanli'}
+      {id: 12, name: '菜单管理', icon: 'icon-daiban', path: 'system/menu'},
+      {id: 13, name: '角色管理', icon: 'icon-jiaoseguanli', path: 'system/role'}
     ]
   },
   {
-    id: 4,
+    id: 14,
     name: '系统监控',
-    icon: 'icon-houtaiguanli',
+    icon: 'icon-plus-datareport',
     children: [
-      {id: 5, name: '操作日志', icon: 'icon-IDCjifang'}
+      {id: 15, name: '操作日志', icon: 'icon-IDCjifang', path: 'system/log'}
     ]
   }
 ]

@@ -1,3 +1,4 @@
+@import "./varibles.scss";
 .btn-block {
   width: 100%;
 }
@@ -11,4 +12,7 @@
   content:"";
   display: block;
   clear:both;
+}
+.red {
+  color: $strong;
 }

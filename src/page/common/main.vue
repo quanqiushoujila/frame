@@ -2,9 +2,13 @@
   <div id="main-system"
     v-loading.fullscreen.lock="fullscreenLoading"
     element-loading-text="拼命加载中">
-    <main-header></main-header>
-    <main-nav></main-nav>
+    <main-header
+      :infoData="infoData"
+      :username="username">
+    </main-header>
+    <main-menu :menuList="menuList"></main-menu>
     <main-content :style="{ 'min-height': documentClientHeight + 'px' }" class="content-wrapper">
+      <div style="height: 200px;width: 100%;background-color: #fff;"></div>
       <keep-alive>
         <router-view></router-view>
       </keep-alive>
@@ -14,12 +18,23 @@
 <script>
 import mainHeader from 'components/main/main-header'
 import mainContent from 'components/main/main-content'
-import mainNav from 'components/main/main-nav'
-import { main } from 'js/api'
+import mainMenu from 'components/main/main-menu'
+import { user, info } from 'js/api'
 
 export default {
   name: 'main-system',
-  components: { mainHeader, mainContent, mainNav },
+  components: { mainHeader, mainContent, mainMenu },
+  data () {
+    return {
+      menuList: [], // 菜单信息
+      username: '', // 当前用户
+      // 未审核数据
+      infoData: {
+        all: 0,
+        count: 0
+      }
+    }
+  },
   computed: {
     fullscreenLoading: {
       get () { return this.$store.state.common.fullscreenLoading },
@@ -48,13 +63,31 @@ export default {
       this.$nextTick(() => {
         this.getNavList()
       })
+      this.getUser()
+      this.getInfo()
       this.resetDocumentClientHeight()
     },
-    getNavList () {
-      main({navId: this.parentNavId}).then((data) => {
-        this.fullscreenLoading = false
-        console.log(data)
+    // 获取当前用户信息
+    getUser () {
+      user().then((res) => {
+        if (res.code === this.GLOBAL.SUCCESS) {
+          this.username = res.data.username
+        }
       })
+    },
+    // 当前代办事项
+    getInfo () {
+      info().then((res) => {
+        if (res.code === this.GLOBAL.SUCCESS) {
+          this.infoData.all = res.count
+          this.infoData.count = res.count
+        }
+      })
+    },
+    // 获取菜单数据
+    getNavList () {
+      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))
+      this.fullscreenLoading = false
     },
     // 重置窗口可视高度
     resetDocumentClientHeight () {

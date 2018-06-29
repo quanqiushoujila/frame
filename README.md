@@ -4,7 +4,7 @@
 
 ## 技术栈
 
-vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-cookie + axios + qs
+vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-cookie + axios + qs + lodash
 
 ## 项目布局
 
@@ -27,10 +27,10 @@ vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-
 │   ├── components                               // 组件
 │   │       ├── main                             // 主页面组件
 │   │       │   ├── main-header.vue              // 头部
-│   │       │   ├── main-nav.vue                 // 菜单
+│   │       │   ├── main-menu.vue                // 菜单
 │   │       │   └── main-content.vue             // 主内容
-│   │       └── nav                              // 菜单组件
-│   │           └── nav.vue                      // 菜单
+│   │       └── menu                             // 菜单组件
+│   │           └── menu.vue                     // 菜单
 │   ├── js                                       
 │   │   ├── api                                  // 接口
 │   │   │   └── index.js                         // 所有接口
@@ -49,7 +49,11 @@ vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-
 │   │   │   ├── mainIndex.vue                    // 总目录页
 │   │   │   └── main.vue                         // 主页
 │   │   └──system                                // 系统配置页面
+│   │   │   ├── log.vue                          // 操作日志
+│   │   │   ├── menu.vue                         // 菜单管理
+│   │   │   └── role.vue                         // 角色管理
 │   ├── router                                   // 路由
+│   │   │   ├── import.js                        // import方法
 │   │   └── index.js                             // 路由配置
 │   └── store                                    // vuex的状态管理
 │       ├── module                               // store模块

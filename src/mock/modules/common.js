@@ -26,3 +26,31 @@ export function logout () {
     }
   }
 }
+
+// 用户信息
+export function user () {
+  return {
+    url: '/user',
+    type: 'get',
+    data: {
+      'msg': 'success',
+      'code': 0,
+      'data': {
+        'username': 'admin'
+      }
+    }
+  }
+}
+
+// 当前代办事项
+export function info () {
+  return {
+    url: '/info',
+    type: 'get',
+    data: {
+      'msg': 'success',
+      'code': 0,
+      'count': 8
+    }
+  }
+}
