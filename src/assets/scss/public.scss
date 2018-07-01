@@ -1,4 +1,5 @@
 @import "./varibles.scss";
+// 登录页和mainIndex布局
 .main-container {
   height: 100vh;
   width: 100%;
@@ -46,9 +47,9 @@
     }
   }
 }
-
+// 菜单
 .el-menu {
-  border-right: none;
+  border-right: none !important;
   background-color: $blue2;
   .el-submenu {
     background-color: $blue2;
@@ -79,7 +80,7 @@
   }
   .is-active {
     background-color: #347ec9;
-  }
+  } 
 }
 
 .main-content {
@@ -90,7 +91,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background-color: #e6e6e6;
+    background-color: $grey;
     .is-active {
       background-color: #fff;
       color: #8391a5;

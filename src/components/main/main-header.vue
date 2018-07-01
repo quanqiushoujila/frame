@@ -103,6 +103,8 @@ export default {
     height: $headerHeight;
     background-color: #fff;
     z-index: 100;
+    border-bottom: 1px solid #d7d7d7;
+    box-sizing: border-box;
     .logo-wrapper {
       margin: 0;
       width: $navWidth;

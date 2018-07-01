@@ -14,8 +14,8 @@
       </div>
       <div class="main-index-content">
         <ul class="clearfix">
-          <li v-for="item in mainNavData" :key="item.id" class="pull-left">
-            <router-link :to="{name: 'main', params: {navId: item.id}}" @click.native="setParentNavId(item.id)">
+          <li v-for="(item, index) in menuIndexList" :key="item.id" class="pull-left">
+            <router-link :to="{name: 'main', params: {navId: index}}" @click.native="setParentNavId(item.id)">
               <span><i class="iconfont" :class="item.remarks"></i>{{item.name}}</span>
             </router-link>
           </li>
@@ -25,12 +25,12 @@
   </div>
 </template>
 <script>
-import { mainIndex } from 'js/api'
+import { mainAll } from 'js/api'
 export default {
   name: 'main-index',
   data () {
     return {
-      mainNavData: []
+      menuIndexList: []
     }
   },
   computed: {
@@ -47,18 +47,41 @@ export default {
     }
   },
   created () {
+    this.$nextTick()
     this.init()
   },
   methods: {
     init () {
       this.fullscreenLoading = true
-      this.getMainIndex()
+      this.getSessionOrApi()
     },
-    getMainIndex () {
-      mainIndex().then((res) => {
-        if (res.code === this.GLOBAL.SUCCESS) {
-          this.mainNavData = res.data
+    getSessionOrApi () {
+      const list = sessionStorage.getItem('menuIndexList')
+      if (list && list.length) {
+        this.menuIndexList = JSON.parse(list)
+        if (this.menuIndexList && this.menuIndexList.length > 0) {
+          console.log('mainAll session')
+          this.fullscreenLoading = false
         } else {
+          this.getMainAll()
+        }
+      } else {
+        this.getMainAll()
+      }
+    },
+    getMainAll () {
+      console.log('mainAll ajax')
+      mainAll().then((res) => {
+        console.log(res)
+        if (res.code === this.GLOBAL.SUCCESS) {
+          const data = res.data
+          const menuIndexList = data.mainIndex
+          const permissions = data.permissions
+          const menuList = data.main
+          sessionStorage.setItem('menuIndexList', JSON.stringify(menuIndexList) || '[]')
+          sessionStorage.setItem('permissions', JSON.stringify(permissions) || '{}')
+          sessionStorage.setItem('menuList', JSON.stringify(menuList) || '[]')
+          this.menuIndexList = menuIndexList
         }
         this.fullscreenLoading = false
       })

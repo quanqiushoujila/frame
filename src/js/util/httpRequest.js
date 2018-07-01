@@ -29,6 +29,9 @@ http.interceptors.request.use(config => {
 http.interceptors.response.use(response => {
   if (response.data && response.data.code === 401) { // 401, token失效
     Vue.cookie.delete('token')
+    sessionStorage.setItem('menuList', []) // 菜单
+    sessionStorage.setItem('permissions', []) // 权限
+    sessionStorage.setItem('menuIndexList', []) // 主菜单
     router.options.isAddDynamicMenuRoutes = false
     router.push({ name: 'login' })
   }

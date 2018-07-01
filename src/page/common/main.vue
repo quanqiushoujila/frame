@@ -46,19 +46,16 @@ export default {
     }
   },
   created () {
-    this.fullscreenLoading = true
+    // this.fullscreenLoading = true
     this.init()
   },
-  beforeRouteEnter (to, from, next) {
-    next(vm => {
-      vm.parentNavId = to.params.navId
-    })
-  },
+  // beforeRouteEnter (to, from, next) {
+  //   next(vm => {
+  //     vm.parentNavId = to.params.navId
+  //   })
+  // },
   methods: {
     init () {
-      this.$nextTick(() => {
-        this.getNavList()
-      })
       this.getUser()
       this.getInfo()
       this.resetDocumentClientHeight()
@@ -82,8 +79,9 @@ export default {
     },
     // 获取菜单数据
     getNavList () {
-      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))
-      this.fullscreenLoading = false
+      // console.log('main router', this.$router)
+      // this.menuList = JSON.parse(sessionStorage.getItem('menuList'))
+      // this.fullscreenLoading = false
     },
     // 重置窗口可视高度
     resetDocumentClientHeight () {
@@ -98,6 +96,5 @@ export default {
 
 <style lang="scss" scoped>
 .content-wrapper {
-  background: #fff;
 }
 </style>

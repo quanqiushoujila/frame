@@ -80,6 +80,15 @@ export const info = (data) => {
 }
 
 /**
+ * 获取主菜单，子菜单，权限
+ */
+export const mainAll = (data) => {
+  const url = $http.adornUrl('/mainAll')
+  const method = 'get'
+  return request({url, method, data})
+}
+
+/**
  * [主菜单]
  */
 export const mainIndex = (data) => {

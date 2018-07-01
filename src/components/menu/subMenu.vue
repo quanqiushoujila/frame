@@ -29,7 +29,9 @@ export default {
   },
   components: { SubMenu },
   methods: {
-    gotoRouteHandle (menu) {}
+    gotoRouteHandle (menu) {
+      this.$router.push({name: menu.filename})
+    }
   }
 }
 </script>

@@ -53,7 +53,9 @@ vue2 + vuex + vue-router + webpack + ES6/7  + sass + echarts + element-ui + vue-
 │   │   │   ├── menu.vue                         // 菜单管理
 │   │   │   └── role.vue                         // 角色管理
 │   ├── router                                   // 路由
-│   │   │   ├── import.js                        // import方法
+│   │   │   ├── import.js                        // 路由懶加載方法
+│   │   │   ├── mainMenu.js                      // 菜单首页路由
+│   │   │   ├── childrenMenu.js                  // 子菜单路由
 │   │   └── index.js                             // 路由配置
 │   └── store                                    // vuex的状态管理
 │       ├── module                               // store模块
