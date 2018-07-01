@@ -29,7 +29,7 @@
               width="100%" height="100%" frameborder="0" scrolling="yes">
             </iframe>
             <keep-alive v-else>
-              <router-view></router-view>
+              <router-view v-if="item.filename === mainTabsActiveName"></router-view>
             </keep-alive>
           </el-card>
         </el-tab-pane>
@@ -77,9 +77,16 @@ export default {
   },
   methods: {
     // tabs, 选中tab
-    selectedTabHandle () {},
+    selectedTabHandle (tab) {
+      tab = this.mainTabs.filter(item => item.filename === tab.name)
+      if (tab.length >= 1) {
+        this.$router.push({ name: tab[0].filename })
+      }
+    },
     // tabs, 删除tab
-    removeTabHandle () {},
+    removeTabHandle (tabName) {
+      console.log(tabName)
+    },
     tabsCloseCurrentHandle () {},
     tabsCloseOtherHandle () {},
     tabsCloseAllHandle () {},

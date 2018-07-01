@@ -20,6 +20,7 @@
 
 <script>
 import SubMenu from './subMenu'
+
 export default {
   name: 'sub-menu',
   props: {
@@ -27,9 +28,33 @@ export default {
       type: Object
     }
   },
+  computed: {
+    mainTabs: {
+      get () { return this.$store.state.common.mainTabs },
+      set (val) { this.$store.commit('common/updateMainTabs', val) }
+    },
+    mainTabsActiveName: {
+      get () { return this.$store.state.common.mainTabsActiveName },
+      set (val) { this.$store.commit('common/updateMainTabsActiveName', val) }
+    },
+    menuActiveName: {
+      get () { return this.$store.state.common.menuActiveName },
+      set (val) { this.$store.commit('common/updateMenuActiveName', val) }
+    }
+  },
   components: { SubMenu },
   methods: {
+    // 菜单切换
     gotoRouteHandle (menu) {
+      console.log(menu, this.mainTabs, this.mainTabsActiveName)
+      const name = menu.filename
+      const list = this.mainTabs.filter((item) => {
+        return item.id === menu.id
+      })
+      if (list.length === 0) {
+        this.mainTabs.push(menu)
+      }
+      this.mainTabsActiveName = name
       this.$router.push({name: menu.filename})
     }
   }
