@@ -27,6 +27,10 @@ export default {
     mainTabsActiveName: {
       get () { return this.$store.state.common.mainTabsActiveName },
       set (val) { this.$store.commit('common/updateMainTabsActiveName', val) }
+    },
+    menuActiveName: {
+      get () { return this.$store.state.common.menuActiveName },
+      set (val) { this.$store.commit('common/updateMenuActiveName', val) }
     }
   },
   created () {
@@ -43,8 +47,14 @@ export default {
         const path = router.path
         const mainList = JSON.parse(sessionStorage.getItem('menuList'))
         this.getActiveMenu(mainList, path)
-        this.mainTabsActiveName = router.path
-        this.mainTabs.push(this.currentMainTabs)
+        this.mainTabsActiveName = router.name
+        const same = this.mainTabs.filter((item) => {
+          return item.id === this.currentMainTabs.id
+        })
+        console.log(same)
+        if (same.length === 0) {
+          this.mainTabs.push(this.currentMainTabs)
+        }
       }
     },
     getActiveMenu (mainList, path) {

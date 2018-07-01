@@ -1,6 +1,6 @@
 <template>
   <div class="main-content">
-    <div class="main-wrapper">
+    <div class="main-wrapper" :class="{'has-tab': $route.meta.isTab}">
       <el-tabs
         v-if="$route.meta.isTab"
         v-model="mainTabsActiveName"
@@ -17,10 +17,10 @@
           </el-dropdown-menu>
         </el-dropdown>
         <el-tab-pane
-          :key="item.name"
+          :key="item.path"
           v-for="item in mainTabs"
-          :label="item.title"
-          :name="item.name"
+          :label="item.name"
+          :name="item.filename"
         >
           <el-card class="box-card">
             <iframe
@@ -99,6 +99,9 @@ export default {
       position: relative;
       padding: 15px 15px 15px;
       height: 100px;
+      &.has-tab {
+        padding-top: 55px;
+      }
       .site-tabs__tools{
         position: fixed;
         top: $headerHeight;
