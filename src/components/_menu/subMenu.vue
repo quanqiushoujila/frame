@@ -46,16 +46,16 @@ export default {
   methods: {
     // 菜单切换
     gotoRouteHandle (menu) {
-      console.log(menu, this.mainTabs, this.mainTabsActiveName)
-      const name = menu.filename
-      const list = this.mainTabs.filter((item) => {
-        return item.id === menu.id
-      })
-      if (list.length === 0) {
-        this.mainTabs.push(menu)
-      }
-      this.mainTabsActiveName = name
-      this.$router.push({name: menu.filename})
+      // const name = menu.filename
+      // const list = this.mainTabs.filter((item) => {
+      //   return item.id === menu.id
+      // })
+      // if (list.length === 0) {
+      //   this.mainTabs.push(menu)
+      // }
+      // this.mainTabsActiveName = name
+      // this.menuActiveName = name
+      // this.$router.push({name: menu.filename})
     }
   }
 }

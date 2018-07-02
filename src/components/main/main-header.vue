@@ -1,17 +1,17 @@
 <template>
   <div class="main-header">
-    <h1 class="logo-wrapper pull-left">
+    <h1 class="logo-wrapper pull-left" :class="{'mini-show': sidebarFold}">
       <router-link to="/mainIndex" class="logo-brand-lg">
         <img src="~img/logo.png" alt="logo">
         <span>数据基因</span>
       </router-link>
-      <!-- <router-link to="/mainIndex" class="logo-brand-mini">
+      <router-link to="/mainIndex" class="logo-brand-mini">
         <img src="~img/logo.png" alt="logo">
-      </router-link> -->
+      </router-link>
     </h1>
     <div class="header-body pull-left">
-      <div class="menu-bar">
-        <i class="iconfont icon-liebiaoshouqi"></i>
+      <div class="menu-bar" @click="sidebarFold = !sidebarFold">
+        <i class="iconfont" :class="menuIcon"></i>
       </div>
       <ul class="header-nav pull-right">
         <li class="item avatar pull-left">
@@ -74,6 +74,15 @@ export default {
       }
     }
   },
+  computed: {
+    sidebarFold: {
+      get () { return this.$store.state.common.sidebarFold },
+      set (val) { this.$store.commit('common/updateSidebarFold', val) }
+    },
+    menuIcon () {
+      return this.sidebarFold ? 'icon-liebiaozhankai' : 'icon-liebiaoshouqi'
+    }
+  },
   methods: {
     logout () {
       this.$confirm(`确定进行[退出]操作?`, '提示', {
@@ -121,6 +130,18 @@ export default {
       span {
         color: #fff;
         font-weight: 500;
+      }
+      &.mini-show {
+        .logo-brand-mini {
+          display: block;
+        }
+        .logo-brand-lg {
+          display: none;
+        }
+      }
+      .logo-brand-mini {
+        display: none;
+        width: $navMiniWidth;
       }
     }
     .header-body {

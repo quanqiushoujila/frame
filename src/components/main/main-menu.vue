@@ -1,25 +1,28 @@
 <template>
   <aside class="main-nav">
-    <el-menu>
+    <el-menu v-if="!sidebarFold">
       <sub-menu
         v-for="menu in menuList"
         :key="menu.id"
         :menu="menu">
       </sub-menu>
     </el-menu>
+    <nav class="mini-nav-wrapper" v-else>
+      <router-link v-for="item in mainIndexList" :to="`/${item.filename}`" :key="item.id" class="mini-nav-item">
+        <i class="iconfont" :class="item.remarks"></i>
+      </router-link>
+    </nav>
   </aside>
 </template>
 <script>
-import SubMenu from '../menu/subMenu'
-import mainTabsMixin from 'js/mixin/mainTabs'
-
+import SubMenu from '../_menu/subMenu'
+import mainMenu from 'js/mixin/mainMenu'
 export default {
   name: 'mainNav',
   components: { SubMenu },
-  mixins: [mainTabsMixin],
+  mixins: [mainMenu],
   data () {
     return {
-      menuList: []
     }
   },
   computed: {
@@ -34,11 +37,22 @@ export default {
     menuActiveName: {
       get () { return this.$store.state.common.menuActiveName },
       set (val) { this.$store.commit('common/updateMenuActiveName', val) }
+    },
+    sidebarFold: {
+      get () { return this.$store.state.common.sidebarFold },
+      set (val) { this.$store.commit('common/updateSidebarFold', val) }
+    },
+    mainIndexList () {
+      return JSON.parse(sessionStorage.getItem('menuIndexList'))
+    },
+    menuList: {
+      get () { return this.$store.state.common.menuList },
+      set (val) { this.$store.commit('common/updateMenuList', val) }
     }
   },
   created () {
+    this.sidebarFold = false
     this.init(this.$route)
-    console.log('menu route', this.$route)
   },
   methods: {
     init (router) {
@@ -48,9 +62,10 @@ export default {
     routeHandle (router) {
       if (router.meta.isTab) {
         const path = router.path
-        const mainList = JSON.parse(sessionStorage.getItem('menuList'))
-        this.getActiveMenu(mainList, path)
+        const mainList = this.menuList
+        this.childrenMenu(mainList, path)
         this.mainTabsActiveName = router.name
+        this.menuActiveName = router.name
         const same = this.mainTabs.filter((item) => {
           return item.id === this.currentMainTabs.id
         })
@@ -60,7 +75,7 @@ export default {
       }
     },
     getCurrentMenu () {
-      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))[+this.$route.meta.navId || +this.$route.params.navId]
+      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))[this.$route.meta.navId || this.$route.params.navId]
     }
   }
 }
@@ -77,5 +92,21 @@ export default {
     z-index: 100;
     background-color: $blue2;
     overflow-x: hidden;
+    .mini-nav-wrapper {
+      width: $navMiniWidth;
+      .mini-nav-item {
+        display: block;
+        height: $navMiniWidth;
+        color: #c9d1db;
+        line-height: $navMiniWidth;
+        text-align: center;
+        &:hover {
+          background-color: $blue3;
+        }
+        .iconfont {
+          font-size: 20px;
+        }
+      }
+    }
   }
 </style>

@@ -1,4 +1,9 @@
 export default {
+  data () {
+    return {
+      currentMainTabs: []
+    }
+  },
   methods: {
     getActiveMenu (mainList, path) {
       for (let i = 0, len = mainList.length; i < len; i++) {

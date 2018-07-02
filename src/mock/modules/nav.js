@@ -109,7 +109,8 @@ const main = [
       icon: 'icon-shezhi1',
       children: [
         {id: 12, name: '菜单管理', icon: 'icon-daiban', path: '/system/menu', filename: 'menu'},
-        {id: 13, name: '角色管理', icon: 'icon-jiaoseguanli', path: '/system/role', filename: 'role'}
+        {id: 13, name: '角色管理', icon: 'icon-jiaoseguanli', path: '/system/role', filename: 'role'},
+        {id: 14, name: '用户管理', icon: 'icon-yonghuguanli', path: '/system/user', filename: 'user'}
       ]
     },
     {

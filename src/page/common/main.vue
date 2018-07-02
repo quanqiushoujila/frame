@@ -6,7 +6,7 @@
       :infoData="infoData"
       :username="username">
     </main-header>
-    <main-menu :menuList="menuList"></main-menu>
+    <main-menu></main-menu>
     <main-content :style="{ 'min-height': documentClientHeight + 'px' }" class="content-wrapper">
     </main-content>
   </div>
@@ -22,7 +22,6 @@ export default {
   components: { mainHeader, mainContent, mainMenu },
   data () {
     return {
-      menuList: [], // 菜单信息
       username: '', // 当前用户
       // 未审核数据
       infoData: {
@@ -43,7 +42,27 @@ export default {
     parentNavId: {
       get () { return this.$store.state.common.parentNavId },
       set (val) { this.$store.commit('common/updateParentNavId', val) }
+    },
+    mainTabs: {
+      get () { return this.$store.state.common.mainTabs },
+      set (val) { this.$store.commit('common/updateMainTabs', val) }
+    },
+    menuList: {
+      get () { return this.$store.state.common.menuList },
+      set (val) { this.$store.commit('common/updateMenuList', val) }
+    },
+    sidebarFold: {
+      get () { return this.$store.state.common.sidebarFold },
+      set (val) { this.$store.commit('common/updateSidebarFold', val) }
     }
+  },
+  beforeRouteUpdate (to, from, next) {
+    if (to.meta.isMain) {
+      const navId = to.params.navId || to.meta.navId
+      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))[navId]
+      this.sidebarFold = false
+    }
+    next()
   },
   created () {
     // this.fullscreenLoading = true
@@ -76,12 +95,6 @@ export default {
           this.infoData.count = res.count
         }
       })
-    },
-    // 获取菜单数据
-    getNavList () {
-      // console.log('main router', this.$router)
-      // this.menuList = JSON.parse(sessionStorage.getItem('menuList'))
-      // this.fullscreenLoading = false
     },
     // 重置窗口可视高度
     resetDocumentClientHeight () {

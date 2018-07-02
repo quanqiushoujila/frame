@@ -1,9 +1,9 @@
 <template>
-  <div class="user-manage">用户管理</div>
+  <el-button type="primary">主要按钮</el-button>
 </template>
 <script>
 export default {
-  name: ''
+  name: 'addBtn'
 }
 </script>
 

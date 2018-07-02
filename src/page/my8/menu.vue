@@ -1,5 +1,5 @@
 <template>
-  <div class="user-manage">用户管理</div>
+  <div>my8</div>
 </template>
 <script>
 export default {

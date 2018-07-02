@@ -50,7 +50,7 @@ router.beforeEach((to, from, next) => {
     next()
   } else {
     console.log('router else')
-    if (to.params.navId && mainMenu.length > to.params.navId) {
+    if ((to.params.navId || to.params.navId === 0) && mainMenu.length > to.params.navId) {
       const id = +to.params.navId
       if (mainMenu[id].name) {
         console.log(+to.params.navId, mainMenu[id].name)

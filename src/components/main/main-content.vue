@@ -5,6 +5,7 @@
         v-if="$route.meta.isTab"
         v-model="mainTabsActiveName"
         :closable="true"
+        type="card"
         @tab-click="selectedTabHandle"
         @tab-remove="removeTabHandle">
         <el-dropdown class="site-tabs__tools" :show-timeout="0" :body-style="siteContentViewHeight">
@@ -43,6 +44,9 @@
   </div>
 </template>
 <script>
+import {mainMenu} from '@/router/mainMenu'
+import clonedeep from 'lodash/clonedeep'
+
 const headerHeight = 55
 const tabHeight = 40
 const paddingHeight = 30
@@ -70,10 +74,11 @@ export default {
     mainTabsActiveName: {
       get () { return this.$store.state.common.mainTabsActiveName },
       set (val) { this.$store.commit('common/updateMainTabsActiveName', val) }
+    },
+    menuActiveName: {
+      get () { return this.$store.state.common.menuActiveName },
+      set (val) { this.$store.commit('common/updateMenuActiveName', val) }
     }
-  },
-  created () {
-    console.log('mainIndex route', this.$route)
   },
   methods: {
     // tabs, 选中tab
@@ -85,12 +90,48 @@ export default {
     },
     // tabs, 删除tab
     removeTabHandle (tabName) {
-      console.log(tabName)
+      this.mainTabs = this.mainTabs.filter(item => item.filename !== tabName)
+      if (this.mainTabs.length > 0) {
+        this.mainTabsActiveName = this.mainTabs[this.mainTabs.length - 1].filename
+        this.menuActiveName = this.mainTabs[this.mainTabs.length - 1].filename
+        this.$router.push({name: this.mainTabs[this.mainTabs.length - 1].filename})
+      } else {
+        const navId = this.$route.meta.navId
+        this.mainTabsActiveName = ''
+        this.menuActiveName = ''
+        this.$router.push({name: mainMenu[navId].name})
+      }
     },
-    tabsCloseCurrentHandle () {},
-    tabsCloseOtherHandle () {},
-    tabsCloseAllHandle () {},
-    tabsRefreshCurrentHandle () {}
+    // 关闭当前tab
+    tabsCloseCurrentHandle () {
+      this.removeTabHandle(this.mainTabsActiveName)
+    },
+    // 关闭其他tab
+    tabsCloseOtherHandle () {
+      this.mainTabs = this.mainTabs.filter(item => item.filename === this.mainTabsActiveName)
+    },
+    // 关闭所有tab
+    tabsCloseAllHandle () {
+      const navId = this.$route.meta.navId
+      this.mainTabsActiveName = ''
+      this.menuActiveName = ''
+      this.mainTabs = []
+      this.$router.push({name: mainMenu[navId].name})
+    },
+    // 刷新当前tab
+    tabsRefreshCurrentHandle () {
+      const tempTabName = this.mainTabsActiveName
+      const refreshMenu = this.mainTabs.filter(item => item.filename === this.mainTabsActiveName)
+      this.removeTabHandle(tempTabName)
+      const menu = clonedeep(this.mainTabs)
+      menu.push(refreshMenu[0])
+      this.$nextTick(() => {
+        this.mainTabsActiveName = tempTabName
+        this.menuActiveName = tempTabName
+        this.mainTabs = menu
+        this.$router.push({ name: tempTabName })
+      })
+    }
   }
 }
 </script>
