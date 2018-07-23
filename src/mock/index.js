@@ -8,6 +8,11 @@ import * as sysMenu from './modules/sys-menu'
 import * as sysRole from './modules/sys-role'
 import * as sysUser from './modules/sys-user'
 import * as nav from './modules/nav'
+import * as sysDirection from './modules/sys-dictionary'
+import * as sysCompartment from './modules/sys-compartment'
+import * as sysDepartment from './modules/sys-department'
+import * as sysParame from './modules/sys-parame'
+import * as sysTime from './modules/sys-time'
 
 // tips
 // 1. 开启/关闭[业务模块]拦截, 通过调用fnCreate方法[isOpen参数]设置.
@@ -21,6 +26,11 @@ fnCreate(sysMenu, false)
 fnCreate(sysRole, false)
 fnCreate(sysUser, false)
 fnCreate(nav, false)
+fnCreate(sysDirection, false)
+fnCreate(sysCompartment, false)
+fnCreate(sysDepartment, false)
+fnCreate(sysParame, false)
+fnCreate(sysTime, false)
 
 // const BASE_URL = 'http://123.com'
 

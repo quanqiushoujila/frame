@@ -19,7 +19,7 @@ export const mainMenu = [
   // 8
   { path: '/my9', name: 'my9', component: _import('my9/menu'), meta: {title: 'my9', isTab: false, navId: 8, isMain: true} },
   // 9 system
-  { path: '/system', name: 'system', component: _import('system/user'), meta: {title: '用户管理', isTab: false, navId: 9, isMain: true} }
+  { path: '/system', name: 'system', component: _import('system/user/index'), meta: {title: '用户管理', isTab: false, navId: 9, isMain: true} }
 ]
 
 export const mainName = mainMenu.map((item) => {

@@ -25,7 +25,7 @@
   </div>
 </template>
 <script>
-import { mainAll } from 'js/api'
+import { mainAll } from 'js/api/common/nav'
 export default {
   name: 'main-index',
   data () {
@@ -47,7 +47,6 @@ export default {
     }
   },
   created () {
-    this.$nextTick()
     this.init()
   },
   methods: {
@@ -60,7 +59,6 @@ export default {
       if (list && list.length) {
         this.menuIndexList = JSON.parse(list)
         if (this.menuIndexList && this.menuIndexList.length > 0) {
-          console.log('mainAll session')
           this.fullscreenLoading = false
         } else {
           this.getMainAll()
@@ -70,9 +68,7 @@ export default {
       }
     },
     getMainAll () {
-      console.log('mainAll ajax')
       mainAll().then((res) => {
-        console.log(res)
         if (res.code === this.GLOBAL.SUCCESS) {
           const data = res.data
           const menuIndexList = data.mainIndex

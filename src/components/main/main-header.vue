@@ -1,6 +1,6 @@
 <template>
-  <div class="main-header">
-    <h1 class="logo-wrapper pull-left" :class="{'mini-show': sidebarFold}">
+  <div class="main-header" :class="{'mini-show': sidebarFold}">
+    <h1 class="logo-wrapper pull-left">
       <router-link to="/mainIndex" class="logo-brand-lg">
         <img src="~img/logo.png" alt="logo">
         <span>数据基因</span>
@@ -9,7 +9,7 @@
         <img src="~img/logo.png" alt="logo">
       </router-link>
     </h1>
-    <div class="header-body pull-left">
+    <div class="header-body">
       <div class="menu-bar" @click="sidebarFold = !sidebarFold">
         <i class="iconfont" :class="menuIcon"></i>
       </div>
@@ -56,7 +56,7 @@
   </div>
 </template>
 <script>
-import { logout } from 'js/api'
+import { logout } from 'js/api/common/index'
 export default {
   name: 'mainHeader',
   props: {
@@ -111,9 +111,23 @@ export default {
     right: 0;
     height: $headerHeight;
     background-color: #fff;
-    z-index: 100;
+    z-index: 1000;
     border-bottom: 1px solid #d7d7d7;
     box-sizing: border-box;
+    &.mini-show {
+      .logo-wrapper {
+        width: $navMiniWidth;
+        .logo-brand-mini {
+          display: block;
+        }
+        .logo-brand-lg {
+          display: none;
+        }
+      }
+      .header-body {
+        margin-left: $navMiniWidth;
+      }
+    }
     .logo-wrapper {
       margin: 0;
       width: $navWidth;
@@ -131,21 +145,14 @@ export default {
         color: #fff;
         font-weight: 500;
       }
-      &.mini-show {
-        .logo-brand-mini {
-          display: block;
-        }
-        .logo-brand-lg {
-          display: none;
-        }
-      }
       .logo-brand-mini {
         display: none;
         width: $navMiniWidth;
       }
     }
     .header-body {
-      width: calc(100% - 200px);
+      position: relative;
+      margin-left: $navWidth;
       height: $headerHeight;
       line-height: $headerHeight;
       position: relative;

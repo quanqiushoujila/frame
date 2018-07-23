@@ -15,7 +15,6 @@ let globalRoutes = [
   { path: '*', redirect: '/login' }
 ]
 
-console.log('children', children)
 let mainRoutes = {
   path: '/main/:navId',
   name: 'main',
@@ -39,21 +38,16 @@ router.beforeEach((to, from, next) => {
     let token = Vue.cookie.get('token')
     if (!token || !/\S/.test(token)) {
       removeSession()
-      console.log('router login')
       next()
     } else {
-      console.log('router login -> mainIndex')
       next({ name: 'mainIndex' })
     }
   } else if (to.name === 'mainIndex') {
-    console.log('router mainIndex')
     next()
   } else {
-    console.log('router else')
     if ((to.params.navId || to.params.navId === 0) && mainMenu.length > to.params.navId) {
       const id = +to.params.navId
       if (mainMenu[id].name) {
-        console.log(+to.params.navId, mainMenu[id].name)
         next({name: mainMenu[id].name})
       } else {
         next()

@@ -1,5 +1,5 @@
 <template>
-  <div class="main-content">
+  <div class="main-content" :class="{'mini-show': sidebarFold}">
     <div class="main-wrapper" :class="{'has-tab': $route.meta.isTab}">
       <el-tabs
         v-if="$route.meta.isTab"
@@ -49,7 +49,7 @@ import clonedeep from 'lodash/clonedeep'
 
 const headerHeight = 55
 const tabHeight = 40
-const paddingHeight = 30
+const paddingHeight = 15
 
 export default {
   name: 'mainContent',
@@ -78,6 +78,9 @@ export default {
     menuActiveName: {
       get () { return this.$store.state.common.menuActiveName },
       set (val) { this.$store.commit('common/updateMenuActiveName', val) }
+    },
+    sidebarFold: {
+      get () { return this.$store.state.common.sidebarFold }
     }
   },
   methods: {
@@ -139,6 +142,9 @@ export default {
 <style lang="scss" scoped>
   @import "~scss/varibles.scss";
   .main-content {
+    &.mini-show {
+      margin-left: $navMiniWidth;
+    }
     position: relative;
     margin-left: $navWidth;
     padding-top: $headerHeight;

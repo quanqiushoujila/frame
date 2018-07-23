@@ -15,7 +15,7 @@
 import mainHeader from 'components/main/main-header'
 import mainContent from 'components/main/main-content'
 import mainMenu from 'components/main/main-menu'
-import { user, info } from 'js/api'
+import { user, info } from 'js/api/common/index'
 
 export default {
   name: 'main-system',

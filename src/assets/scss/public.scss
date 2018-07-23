@@ -80,15 +80,20 @@
   }
   .is-active {
     background-color: #347ec9;
-  } 
+  }
 }
 
 .main-content {
+  &.mini-show {
+    .el-tabs__header {
+      left: $navMiniWidth;
+    }
+  }
   .el-tabs__header {
-    position: absolute;
+    position: fixed;
     padding: 0 0px 0 0px;
-    top: 0;
-    left: 0;
+    top: $headerHeight;
+    left: $navWidth;
     right: 0;
     z-index: 100;
     background-color: $grey;
@@ -97,4 +102,23 @@
       color: #8391a5;
     }
   }
+}
+
+.main-nav::-webkit-scrollbar-track {/*滚动条里面轨道*/
+  border-radius: 10px;
+  background: $blue2;
+}
+.headerLayout .el-form--inline .el-form-item {
+  margin-bottom: 10px;
+}
+
+.max-height {
+  overflow: auto;
+  min-height: 150px;
+  max-height: 300px;
+}
+
+// 高级搜索
+.is-more i {
+  margin-left: -5px;
 }

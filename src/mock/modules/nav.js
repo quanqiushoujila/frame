@@ -109,8 +109,13 @@ const main = [
       icon: 'icon-shezhi1',
       children: [
         {id: 12, name: '菜单管理', icon: 'icon-daiban', path: '/system/menu', filename: 'menu'},
-        {id: 13, name: '角色管理', icon: 'icon-jiaoseguanli', path: '/system/role', filename: 'role'},
-        {id: 14, name: '用户管理', icon: 'icon-yonghuguanli', path: '/system/user', filename: 'user'}
+        {id: 16, name: '字典管理', icon: 'icon-daiban', path: '/system/dictionary', filename: 'dictionary'},
+        {id: 17, name: '行政区划', icon: 'icon-jiaoseguanli', path: '/system/compartment', filename: 'compartment'},
+        {id: 18, name: '参数配置', icon: 'icon-jiaoseguanli', path: '/system/parame', filename: 'parame'},
+        {id: 19, name: '定时任务管理', icon: 'icon-jiaoseguanli', path: '/system/time', filename: 'time'},
+        {id: 20, name: '机构管理', icon: 'icon-jiaoseguanli', path: '/system/department', filename: 'department'},
+        {id: 21, name: '角色管理', icon: 'icon-jiaoseguanli', path: '/system/role', filename: 'role'},
+        {id: 22, name: '用户管理', icon: 'icon-yonghuguanli', path: '/system/user', filename: 'user'}
       ]
     },
     {
@@ -143,9 +148,11 @@ const navList10 = [
   }
 ]
 
-const permissions = {
-  'system-menu:add': true
-}
+const permissions = [
+  'sys:user:info',
+  'sys:user:update',
+  'sys:user:delete'
+]
 
 const menu = {
   mainIndex: navList,

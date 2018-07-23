@@ -38,13 +38,13 @@
           <el-button type="primary" class="btn-block" :disabled="btnDisabled"  @click="dataFormSubmit()">登录</el-button>
         </el-form>
       </div>
-      <footer class="copyright">国脉海洋信息发展有限公司 版权所有</footer>
+      <footer class="copyright"></footer>
     </div>
   </div>
 </template>
 
 <script>
-import { login } from 'js/api'
+import { login } from 'js/api/common/index'
 export default {
   name: 'login',
   data () {

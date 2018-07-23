@@ -4,11 +4,10 @@ import Mock from 'mockjs'
 var dataList = []
 for (let i = 0; i < Math.floor(Math.random() * 10 + 1); i++) {
   dataList.push(Mock.mock({
-    'roleId': '@increment',
-    'roleName': '@name',
+    'id': '@increment',
+    'name': '@name',
     'remark': '@csentence',
-    'createUserId': 1,
-    'menuIdList': '@range(1, 10, 2)',
+    'menuIds': [3],
     'createTime': '@datetime'
   }))
 }
@@ -22,13 +21,8 @@ export function list () {
     data: {
       'msg': 'success',
       'code': 0,
-      'page': {
-        'totalCount': dataList.length,
-        'pageSize': 10,
-        'totalPage': 1,
-        'currPage': 1,
-        'list': dataList
-      }
+      'count': dataList.length,
+      'data': dataList
     }
   }
 }

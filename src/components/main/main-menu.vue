@@ -1,6 +1,6 @@
 <template>
-  <aside class="main-nav">
-    <el-menu v-if="!sidebarFold">
+  <aside class="main-nav" :class="{'mini-show': sidebarFold}">
+    <el-menu v-if="!sidebarFold" :default-active="defaultActive">
       <sub-menu
         v-for="menu in menuList"
         :key="menu.id"
@@ -23,6 +23,7 @@ export default {
   mixins: [mainMenu],
   data () {
     return {
+      defaultActive: ''
     }
   },
   computed: {
@@ -69,13 +70,19 @@ export default {
         const same = this.mainTabs.filter((item) => {
           return item.id === this.currentMainTabs.id
         })
+        this.defaultActive = this.currentMainTabs.id + ''
         if (same.length === 0) {
           this.mainTabs.push(this.currentMainTabs)
         }
       }
     },
     getCurrentMenu () {
-      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))[this.$route.meta.navId || this.$route.params.navId]
+      let navId = this.$route.meta.navId
+      if (navId || navId === 0) {
+      } else {
+        navId = this.$route.params.navId
+      }
+      this.menuList = JSON.parse(sessionStorage.getItem('menuList'))[navId]
     }
   }
 }
@@ -84,6 +91,9 @@ export default {
 <style lang="scss" scoped>
   @import "~scss/varibles.scss";
   .main-nav {
+    &.mini-show {
+      width: $navMiniWidth;
+    }
     position: fixed;
     top: 55px;
     left: 0;
@@ -92,6 +102,7 @@ export default {
     z-index: 100;
     background-color: $blue2;
     overflow-x: hidden;
+    z-index: 1000;
     .mini-nav-wrapper {
       width: $navMiniWidth;
       .mini-nav-item {

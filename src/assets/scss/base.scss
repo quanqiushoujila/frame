@@ -16,3 +16,20 @@
 .red {
   color: $strong;
 }
+.db {
+  display: block;
+}
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.text-center {
+  text-align: center;
+}
+// @media screen and (min-width: 1140px) {
+//   body {
+//     width: 1140px;
+//     overflow: hidden;
+//   }
+// }
