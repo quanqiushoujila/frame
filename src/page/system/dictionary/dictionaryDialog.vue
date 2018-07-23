@@ -11,38 +11,21 @@
     @cancelHandle="cancelHandle"
     @confirmHandle="confirmHandle"
     >
-    <el-form
-      :model="formData"
+    <k-form
+      @submitHandle="submitHandle"
+      ref="dictionaryForm"
+      :form="form"
+      :formProps="props"
       :rules="rules"
-      ref="ruleForm"
-      label-width="100px"
-      class="rule-form">
-      <el-form-item label="字典名称" prop="name">
-        <el-input v-model="formData.name"></el-input>
-      </el-form-item>
-      <el-form-item label="字典值" prop="value">
-        <el-input v-model="formData.value"></el-input>
-      </el-form-item>
-      <el-form-item label="类型" prop="type">
-        <el-select v-model="formData.type">
-          <el-option
-            v-for="item in typeOptions"
-            :key="item.id"
-            :label="item.label"
-            :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="排序" prop="sort">
-        <el-input v-model="formData.sort"></el-input>
-      </el-form-item>
-    </el-form>
+      :data="formData"
+    />
   </k-dialog>
 </template>
 
 <script>
-import clonedeep from 'lodash/clonedeep'
+// import deepclone from 'lodash/deepclone'
 import kDialog from 'components/_dialog/dialog'
+import kForm from 'components/_form/form'
 import {sysDictionaryType} from 'js/api/system/dictionary'
 import {resetObject} from 'js/util'
 import formMixin from 'js/mixin/form'
@@ -51,7 +34,7 @@ const DICTIONARY = '添加字典项'
 export default {
   name: 'dictionaryDialog',
   mixins: [formMixin],
-  components: {kDialog},
+  components: {kDialog, kForm},
   props: {
     // 弹窗名称
     title: {
@@ -64,7 +47,7 @@ export default {
       default: 'middle'
     },
     // 表单数据
-    form: {
+    formData: {
       type: Object,
       default () {
         return {}
@@ -78,13 +61,11 @@ export default {
   },
   data () {
     return {
+      hasDetail: false,
       searchContent: {
         name: ''
       },
-      hasDetail: false,
-      // 开关弹窗
-      dialogVisible: false,
-      formData: {
+      form: {
         parentId: '',
         id: '',
         name: '',
@@ -95,19 +76,23 @@ export default {
       props: [
         {
           label: '字典名称',
-          prop: 'name'
+          prop: 'name',
+          inputType: 'input'
         },
         {
           label: '字典值',
-          prop: 'value'
+          prop: 'value',
+          inputType: 'input'
         },
         {
           label: '类型',
-          prop: 'type'
+          prop: 'type',
+          inputType: 'select'
         },
         {
           label: '排序',
-          prop: 'sort'
+          prop: 'sort',
+          inputType: 'input'
         }
       ],
       rules: {
@@ -131,13 +116,6 @@ export default {
   created () {
     this.init()
   },
-  watch: {
-    form (newVal) {
-      for (let key in this.formData) {
-        this.$set(this.formData, key, clonedeep(newVal[key]))
-      }
-    }
-  },
   methods: {
     init () {
       this.getType()
@@ -146,46 +124,35 @@ export default {
     getType (data = {}) {
       sysDictionaryType(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.typeOptions = res.data
+          this.setOptions('type', this.props, res.data)
         }
       })
     },
     // Dialog 打开的回调
     openDialogHandle () {
-      this.hasDetail = false
-      this.$nextTick(() => {
-        this.clearValidate()
-      })
+      if (this.title === this.GLOBAL.EDIT) {
+        this.$nextTick(() => {
+          this.$refs.dictionaryForm.validate()
+        })
+      }
       if (this.title === DICTIONARY) {
+        // let parentId = clonedeep(this.formData.parentId)
         resetObject(this.formData)
-        this.formData.parentId = clonedeep(this.form.parentId)
+        this.form.parentId = parentId
+        // resetObject(this.form)
       }
     },
     // Dialog 关闭的回调
     closeDialogHandle () {
-      this.resetForm()
-      resetObject(this.formData)
+      this.$refs.dictionaryForm.resetForm()
+      resetObject(this.form)
     },
     // 确定
     confirmHandle () {
-      let data = clonedeep(this.formData)
-      this.$refs.ruleForm.validate((valid) => {
-        if (valid) {
-          console.log('submit!', data)
-          this.dialogVisible = false
-        } else {
-          return false
-        }
-      })
+      this.$refs.dictionaryForm.submitHandle()
     },
-    validate () {
-      this.$refs['ruleForm'].validate()
-    },
-    clearValidate () {
-      this.$refs['ruleForm'].clearValidate()
-    },
-    resetForm () {
-      this.$refs['ruleForm'].resetFields()
+    submitHandle () {
+      this.close()
     }
   }
 }
