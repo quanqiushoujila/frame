@@ -7,7 +7,7 @@ for (let i = 0; i < Math.floor(Math.random() * 10 + 1); i++) {
     'id': '@increment',
     'name': '@name',
     'remark': '@csentence',
-    'menuIds': [3],
+    'menuIds': [3, 8, 9],
     'createTime': '@datetime'
   }))
 }

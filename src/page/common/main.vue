@@ -4,11 +4,11 @@
     element-loading-text="拼命加载中">
     <main-header
       :infoData="infoData"
-      :username="username">
-    </main-header>
-    <main-menu></main-menu>
-    <main-content :style="{ 'min-height': documentClientHeight + 'px' }" class="content-wrapper">
-    </main-content>
+      :username="username"/>
+    <main-menu/>
+    <main-content
+      :style="{ 'min-height': documentClientHeight + 'px' }"
+    class="content-wrapper"/>
   </div>
 </template>
 <script>
@@ -54,10 +54,21 @@ export default {
     sidebarFold: {
       get () { return this.$store.state.common.sidebarFold },
       set (val) { this.$store.commit('common/updateSidebarFold', val) }
+    },
+    menuActiveName: {
+      get () { return this.$store.state.common.menuActiveName },
+      set (val) { this.$store.commit('common/updateMenuActiveName', val) }
+    },
+    mainTabsActiveName: {
+      get () { return this.$store.state.common.mainTabsActiveName },
+      set (val) { this.$store.commit('common/updateMainTabsActiveName', val) }
     }
   },
   beforeRouteUpdate (to, from, next) {
     if (to.meta.isMain) {
+      this.mainTabs.length = []
+      this.menuActiveName = ''
+      this.mainTabsActiveName = ''
       const navId = to.params.navId || to.meta.navId
       this.menuList = JSON.parse(sessionStorage.getItem('menuList'))[navId]
       this.sidebarFold = false
@@ -65,14 +76,8 @@ export default {
     next()
   },
   created () {
-    // this.fullscreenLoading = true
     this.init()
   },
-  // beforeRouteEnter (to, from, next) {
-  //   next(vm => {
-  //     vm.parentNavId = to.params.navId
-  //   })
-  // },
   methods: {
     init () {
       this.getUser()

@@ -16,7 +16,7 @@
               v-for="item in typeOptions"
               :key="item.id"
               :label="item.name"
-              :value="item.value">
+              :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -31,7 +31,7 @@
               v-for="item in areaIdOptions"
               :key="item.id"
               :label="item.name"
-              :value="item.value">
+              :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -51,10 +51,10 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
         <el-form-item>
-          <add-btn @addClick="addHandle"/>
+          <add-btn @addHandle="addHandle"/>
         </el-form-item>
       </el-form>
     </header-layout>
@@ -66,7 +66,6 @@
         @detailHandle="detailHandle"
         @editHandle="editHandle"
         @deleteHandle="deleteHandle"
-        @repeatPasswordHandle="repeatPasswordHandle"
         :table="table"/>
     </body-layout>
 
@@ -80,8 +79,8 @@
   </div>
 </template>
 <script>
-import clonedeep from 'lodash/clonedeep'
-import {resetObject} from 'js/util'
+// import clonedeep from 'lodash/clonedeep'
+import merge from 'lodash/merge'
 import {sysCompartmentComLevel, sysCompartmentAreaName} from 'js/api/system/compartment'
 import {sysDepartmentList} from 'js/api/system/department'
 import common from 'js/mixin/common'
@@ -180,15 +179,11 @@ export default {
       this.getAreaName()
       this.getComLevel()
     },
-    // 添加操作
-    addHandle () {
-      this.resetFormData()
-      this.title1 = '新增'
+    open () {
       this.$refs.compartmentDialog.open()
     },
     // 获取table数据
     getTableData (data = {}) {
-      data = this.pagination
       this.table.loading = true
       sysDepartmentList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
@@ -208,7 +203,9 @@ export default {
     },
     // 区划级别
     getComLevel (data = {}) {
+      // /sys/compartment/comLevel
       sysCompartmentComLevel(data).then((res) => {
+        console.log(res)
         if (res.code === this.GLOBAL.SUCCESS) {
           this.comLevelOptions = res.data
         }
@@ -216,58 +213,17 @@ export default {
     },
     // 所属行政区划
     getAreaName (data = {}) {
+      // /sys/compartment/areaName
       sysCompartmentAreaName(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
           this.areaIdOptions = res.data
         }
       })
     },
-    // 详情
-    detailHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '详情'
-      this.$refs.compartmentDialog.open()
-      console.log('详情', index, row)
-    },
-    // 编辑
-    editHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '编辑'
-      this.$refs.compartmentDialog.open()
-      console.log('编辑', index, row)
-    },
-    // 删除
-    deleteHandle (index, row) {
-      this.confirmHandle('确定删除吗？').then(() => {
-        console.log('删除', index, row)
-      })
-    },
-    // 重置密码
-    repeatPasswordHandle (index, row) {
-      this.confirmHandle('确定重置密码吗？').then(() => {
-        console.log('重置密码', index, row)
-      })
-    },
-    // table checkbox选择
-    selectionChangeHandle (val) {
-      const ids = val.map((item) => {
-        return item.id
-      })
-      this.deleteQueryData = ids
-    },
-    currentChangeHandle (val) {
-      this.pagination.page = val
-      this.getTableData(this.pagination)
-      console.log('currentChangeHandle', val)
-    },
-    sizeChangeHandle (val) {
-      this.pagination.limit = val
-      this.getTableData(this.pagination)
-      console.log('sizeChangeHandle', val)
-    },
-    // 初始化数据
-    resetFormData () {
-      this.formData = resetObject(this.formData)
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      const result = merge(this.pagination, this.searchContent)
+      this.getTableData(result)
     }
   }
 }

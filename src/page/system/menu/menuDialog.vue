@@ -1,11 +1,11 @@
 <!-- 新增编辑 -->
 <template>
   <k-dialog
+    ref="menuDia"
     :dialogVisible="dialogVisible"
     :title="title"
     :width="width"
-    :hasDetail="hasDetail"
-    @beforeCloseHandle="beforeCloseHandle"
+    :isBtnGroup="isBtnGroup"
     @closeDialogHandle="closeDialogHandle"
     @openDialogHandle="openDialogHandle"
     @cancelHandle="cancelHandle"
@@ -14,101 +14,54 @@
     <k-detail
       v-if="title === '详情'"
       :props="props"
-      :data="form"
+      :data="formData"
       />
-    <el-form
+    <k-form
       v-else
-      :model="formData"
+      @submitHandle="submitHandle"
+      ref="menuForm"
+      :form="form"
+      :formProps="props"
       :rules="rules"
-      ref="ruleForm"
-      label-width="100px"
-      class="rule-form">
-      <el-form-item label="上级菜单" prop="parentName">
-        <el-popover
-          placement="bottom-start"
-          width="400"
-          trigger="click">
-          <div class="max-height">
-            <el-tree
-              node-key="id"
-              @current-change="menuListTreeCurrentChangeHandle"
-              :highlight-current="true"
-              :default-expand-all="true"
-              :expand-on-click-node="false"
-              :data="parentIdOptions"
-              :props="defaultProps"/>
-          </div>
-          <el-input v-model="formData.parentName" readonly slot="reference"></el-input>
-        </el-popover>
-      </el-form-item>
-      <el-form-item label="名称" prop="name">
-        <el-input v-model="formData.name"></el-input>
-      </el-form-item>
-      <el-form-item label="图标" prop="icon">
-        <el-popover
-          ref="iconPopover"
-          placement="top-start"
-          width="400"
-          trigger="click">
-          <div class="max-height">
-            <el-button
-              @click="iconChangeHandle(item)"
-              size="mini"
-              v-for="(item, index) in icons"
-              :key="index" >
-              <i class="iconfont" :class="item"></i>
-          </el-button>
-          </div>
-        </el-popover>
-        <el-input v-model="formData.icon" readonly v-popover:iconPopover></el-input>
-
-      </el-form-item>
-      <el-form-item label="链接">
-        <el-input v-model="formData.url"></el-input>
-      </el-form-item>
-      <el-form-item label="类型" prop="type">
-        <el-select v-model="formData.type" style="width: 100%;">
-          <el-option
-            filterable
-            v-for="item in typeOptions"
-            :key="item.id"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="所属模块" prop="moduleType">
-        <el-select v-model="formData.moduleType" style="width: 100%;">
-          <el-option
-            v-for="item in moduleTypeOptions"
-            :key="item.id"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="权限规则" prop="permission">
-        <el-input v-model="formData.permission"></el-input>
-      </el-form-item>
-      <el-form-item label="排序" prop="sort">
-        <el-input v-model="formData.sort"></el-input>
-      </el-form-item>
-    </el-form>
+      :data="formData"
+      :otherData="otherData"
+    >
+    <div slot="iconForm">
+      <el-popover
+        v-model="iconVisible"
+        placement="top-start"
+        width="400"
+        trigger="click">
+        <div class="max-height">
+          <el-button
+            @click="iconChangeHandle(item)"
+            size="mini"
+            v-for="(item, index) in icons"
+            :key="index" >
+            <i class="iconfont" :class="item"></i>
+        </el-button>
+        </div>
+        <el-input v-model="otherData.icon" readonly slot="reference"></el-input>
+      </el-popover>
+    </div>
+    </k-form>
   </k-dialog>
 </template>
 
 <script>
-import clonedeep from 'lodash/clonedeep'
+// import clonedeep from 'lodash/clonedeep'
 import kDialog from 'components/_dialog/dialog'
 import kDetail from 'components/_form/detail'
+import kForm from 'components/_form/form'
 import {sysMenuType, sysMenuModuleType, sysMenuParentId} from 'js/api/system/menu'
-import {resetObject} from 'js/util'
+// import {resetObject} from 'js/util'
 import icons from 'js/util/icon'
 import formMixin from 'js/mixin/form'
+const ADDCHILD = '添加子级菜单'
 export default {
   name: 'menuDialog',
   mixins: [formMixin],
-  components: {kDialog, kDetail},
+  components: {kDialog, kDetail, kForm},
   props: {
     // 弹窗名称
     title: {
@@ -121,7 +74,7 @@ export default {
       default: 'middle'
     },
     // 表单数据
-    form: {
+    formData: {
       type: Object,
       default () {
         return {}
@@ -135,11 +88,13 @@ export default {
   },
   data () {
     return {
-      // 是否是详情页
-      hasDetail: true,
-      // 开关弹窗
-      dialogVisible: false,
-      formData: {
+      formRef: 'menuForm',
+      dialogRef: 'menuDia',
+      iconVisible: false,
+      otherData: {
+        icon: ''
+      },
+      form: {
         id: '',
         parentName: '',
         parentId: '',
@@ -154,35 +109,45 @@ export default {
       props: [
         {
           label: '上级菜单',
-          prop: 'parentId'
+          prop: 'parentName',
+          defaultProp: 'parentId',
+          inputType: 'inputTree',
+          visible: false
         },
         {
           label: '名称',
-          prop: 'name'
+          prop: 'name',
+          inputType: 'input'
         },
         {
           label: '图标',
-          prop: 'icon'
+          prop: 'icon',
+          inputType: 'other'
         },
         {
           label: '链接',
-          prop: 'url'
+          prop: 'url',
+          inputType: 'input'
         },
         {
           label: '类型',
-          prop: 'type'
+          prop: 'type',
+          inputType: 'select'
         },
         {
           label: '所属模块',
-          prop: 'moduleType'
+          prop: 'moduleType',
+          inputType: 'select'
         },
         {
           label: '权限规则',
-          prop: 'permission'
+          prop: 'permission',
+          inputType: 'input'
         },
         {
           label: '排序',
-          prop: 'sort'
+          prop: 'sort',
+          inputType: 'input'
         }
       ],
       rules: {
@@ -207,35 +172,12 @@ export default {
         sort: [
           { required: true, message: '不能为空', trigger: 'blur' }
         ]
-      },
-      // 上级菜单数据
-      parentIdOptions: [],
-      // 类型数据
-      typeOptions: [],
-      // 所属模块数据
-      moduleTypeOptions: [],
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
-      defaultCheckedKeys: [1]
+      }
     }
   },
   computed: {
     icons () {
       return icons
-    }
-  },
-  watch: {
-    form (newVal) {
-      if (this.title === this.GLOBAL.ADDCHILD) {
-        this.formData.parentId = clonedeep(newVal.parentId) + ''
-        this.formData.parentName = clonedeep(newVal.parentName) + ''
-      } else {
-        for (let key in this.formData) {
-          this.$set(this.formData, key, clonedeep(newVal[key]) + '')
-        }
-      }
     }
   },
   created () {
@@ -252,7 +194,7 @@ export default {
     getType (data = {}) {
       sysMenuType(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.typeOptions = res.data
+          this.setOptions('type', this.props, res.data)
         }
       })
     },
@@ -260,7 +202,7 @@ export default {
     getModuleType () {
       sysMenuModuleType().then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.moduleTypeOptions = res.data
+          this.setOptions('moduleType', this.props, res.data)
         }
       })
     },
@@ -268,55 +210,43 @@ export default {
     getParentId () {
       sysMenuParentId().then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.parentIdOptions = res.data
+          this.setOptions('parentName', this.props, res.data)
         }
       })
     },
     // Dialog 打开的回调
     openDialogHandle () {
-      if (!this.hasDetail) {
-        this.$nextTick(() => {
-          this.clearValidate()
-        })
+      if (this.title === this.GLOBAL.ADDCHILD) {
+        this.$set(this.props[0], 'reference', false)
+        this.$set(this.otherData, 'icon', '')
+      } else {
+        if (this.title === this.GLOBAL.EDIT) {
+          this.$set(this.otherData, 'icon', this.formData.icon)
+          this.validate()
+        } else if (this.title === this.GLOBAL.ADD) {
+          this.$set(this.otherData, 'icon', '')
+        }
+      }
+      if (this.title === this.GLOBAL.ADD || this.title === ADDCHILD) {
+        this.clearValidate()
       }
     },
     // Dialog 关闭的回调
     closeDialogHandle () {
-      if (!this.hasDetail) {
-        this.resetForm()
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD || this.title === this.GLOBAL.ADDCHILD) {
+        this.clearForm()
       }
-      resetObject(this.formData)
+      if (this.title === this.GLOBAL.ADDCHILD) {
+        this.$set(this.props[0], 'reference', true)
+      }
     },
     // 确定
     confirmHandle () {
-      let data = clonedeep(this.formData)
-      this.$refs.ruleForm.validate((valid) => {
-        if (valid) {
-          console.log('submit!', data)
-          this.dialogVisible = false
-        } else {
-          return false
-        }
-      })
+      this.$refs.menuForm.submitHandle()
     },
-    validate () {
-      this.$refs['ruleForm'].validate()
-    },
-    clearValidate () {
-      this.$refs['ruleForm'].clearValidate()
-    },
-    resetForm () {
-      this.$refs['ruleForm'].resetFields()
-    },
-    // 上级菜单选择
-    menuListTreeCurrentChangeHandle (data, node) {
-      console.log(data)
-      this.formData.parentId = data.id
-      this.formData.parentName = data.label
-    },
-    // 图标选择
     iconChangeHandle (icon) {
-      this.formData.icon = icon
+      this.$set(this.otherData, 'icon', icon)
+      this.iconVisible = false
     }
   }
 }

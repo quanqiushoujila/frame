@@ -1,6 +1,6 @@
 const navList = [
   {id: '1', name: '资产普查', remarks: 'icon-jianchajihua', filename: 'my1'},
-  {id: '2', name: '数据目录', remarks: 'icon-mulu1', filename: 'my2'},
+  {id: '2', name: '数据目录', remarks: 'icon-mulu1', filename: 'catalog'},
   {id: '3', name: '业务事项', remarks: 'icon-yewu', filename: 'my3'},
   {id: '4', name: '数源认责', remarks: 'icon-duijie', filename: 'my4'},
   {id: '5', name: '数据治理', remarks: 'icon-biaozhun', filename: 'my5'},
@@ -25,10 +25,10 @@ const main = [
   [
     {
       id: 3,
-      name: '我的待办',
+      name: '目录系统',
       icon: 'icon-shezhi1',
       children: [
-        {id: 32, name: '目录待办', icon: 'icon-daiban', path: '/my2/menu', filename: 'menu'}
+        {id: 32, name: '资源目录', icon: 'icon-daiban', path: '/catalog/resourceCatalog', filename: 'resourcesCatalog'}
       ]
     }
   ],

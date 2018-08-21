@@ -1,11 +1,11 @@
 <!-- 新增编辑 -->
 <template>
   <k-dialog
+    ref="departmentDia"
     :dialogVisible="dialogVisible"
     :title="title"
     :width="width"
-    :hasDetail="hasDetail"
-    @beforeCloseHandle="beforeCloseHandle"
+    :isBtnGroup="isBtnGroup"
     @closeDialogHandle="closeDialogHandle"
     @openDialogHandle="openDialogHandle"
     @cancelHandle="cancelHandle"
@@ -17,90 +17,30 @@
       :props="props"
       :data="formData"
       />
-    <el-form
+    <k-form
       v-else
-      :model="form"
+      @submitHandle="submitHandle"
+      ref="departmentForm"
+      :form="form"
+      :formProps="props"
       :rules="rules"
-      ref="ruleForm"
-      label-width="110px"
-      class="rule-form">
-      <el-form-item label="上级机构" prop="parentName">
-        <el-popover
-          ref="parentNamePopover"
-          placement="bottom-start"
-          width="400"
-          trigger="click">
-          <div class="max-height">
-            <el-tree
-              node-key="id"
-              ref="parentNameTree"
-              :default-checked-keys="defaultCheckedKeys"
-              @current-change="parentIdCurrentChangeHandle"
-              :highlight-current="true"
-              :default-expand-all="true"
-              :expand-on-click-node="false"
-              :data="parentIdOptions"
-              :props="defaultProps"/>
-          </div>
-        </el-popover>
-        <el-input v-model="form.parentName" readonly v-popover:parentNamePopover></el-input>
-      </el-form-item>
-      <el-form-item label="名称" prop="name">
-        <el-input v-model="form.name"></el-input>
-      </el-form-item>
-      <el-form-item label="所属行政区划" prop="areaName">
-        <el-popover
-          ref="areaNamePopover"
-          placement="bottom-start"
-          width="400"
-          trigger="click">
-          <div class="max-height">
-            <el-tree
-              node-key="id"
-              ref="areaNameTree"
-              :default-checked-keys="defaultCheckedKeys"
-              @current-change="areaNameCurrentChangeHandle"
-              :highlight-current="true"
-              :default-expand-all="true"
-              :expand-on-click-node="false"
-              :data="areaNameOptions"
-              :props="defaultProps"/>
-          </div>
-        </el-popover>
-        <el-input v-model="form.areaName" readonly v-popover:areaNamePopover></el-input>
-      </el-form-item>
-      <el-form-item label="机构类别" prop="type">
-        <el-select v-model="form.type">
-          <el-option
-            v-for="item in typeOptions"
-            :key="item.id"
-            :label="item.label"
-            :value="item.id">
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="机构编码" prop="code">
-        <el-input v-model="form.code"></el-input>
-      </el-form-item>
-      <el-form-item label="排序" prop="sort">
-        <el-input v-model="form.sort"></el-input>
-      </el-form-item>
-    </el-form>
+      :data="formData"
+      labelWidth="110px"
+    />
   </k-dialog>
 </template>
 
 <script>
-import clonedeep from 'lodash/clonedeep'
 import kDialog from 'components/_dialog/dialog'
 import kDetail from 'components/_form/detail'
+import kForm from 'components/_form/form'
 import {sysDepartmentType} from 'js/api/system/department'
 import { sysCompartmentList } from 'js/api/system/compartment'
-import {resetObject} from 'js/util'
 import formMixin from 'js/mixin/form'
 export default {
   name: 'departmentDialog',
   mixins: [formMixin],
-  components: {kDialog, kDetail},
+  components: {kDialog, kDetail, kForm},
   props: {
     // 弹窗名称
     title: {
@@ -129,10 +69,8 @@ export default {
   },
   data () {
     return {
-      // 是否有详情页
-      hasDetail: true,
-      // 开关弹窗
-      dialogVisible: false,
+      formRef: 'departmentForm',
+      dialogRef: 'departmentDia',
       form: {
         id: '',
         name: '',
@@ -148,38 +86,56 @@ export default {
       props: [
         {
           label: '上级机构',
-          prop: 'parentName'
+          prop: 'parentName',
+          defaultProp: 'parentId',
+          inputType: 'inputTree',
+          defaultProps: {
+            children: 'children',
+            label: 'name'
+          },
+          visible: false
         },
         {
           label: '名称',
-          prop: 'name'
+          prop: 'name',
+          inputType: 'input'
         },
         {
           label: '所属行政区划',
-          prop: 'areaName'
+          prop: 'areaName',
+          defaultProp: 'areaId',
+          inputType: 'inputTree',
+          defaultProps: {
+            children: 'children',
+            label: 'name'
+          },
+          visible: false
         },
         {
           label: '机构类别',
-          prop: 'type'
+          prop: 'type',
+          inputType: 'select'
         },
         {
           label: '机构编码',
-          prop: 'code'
+          prop: 'code',
+          inputType: 'input'
         },
         {
           label: '排序',
-          prop: 'sort'
+          prop: 'sort',
+          inputType: 'input'
         }
       ],
       rules: {
         parentName: [
-          { required: true, message: '不能为空', trigger: 'blur' }
+          { required: true, message: '不能为空', trigger: 'change' }
         ],
         name: [
           { required: true, message: '不能为空', trigger: 'blur' }
         ],
         areaName: [
-          { required: true, message: '不能为空', trigger: 'blur' }
+          { required: true, message: '不能为空', trigger: 'change' }
         ],
         type: [
           { required: true, message: '不能为空', trigger: 'change' }
@@ -190,23 +146,17 @@ export default {
         sort: [
           { required: true, message: '不能为空', trigger: 'blur' }
         ]
-      },
-      // 所属行政区划
-      areaNameOptions: [],
-      // 机构类别
-      typeOptions: [],
-      defaultProps: {
-        children: 'children',
-        label: 'name'
-      },
-      defaultCheckedKeys: [1]
+      }
     }
   },
   watch: {
-    formData (newVal) {
-      for (let key in this.form) {
-        this.$set(this.form, key, clonedeep(newVal[key]))
-      }
+    parentIdOptions: {
+      handler (newVal) {
+        if (newVal && newVal.length > 0) {
+          this.setOptions('parentName', this.props, newVal)
+        }
+      },
+      immediate: true
     }
   },
   created () {
@@ -221,7 +171,7 @@ export default {
     getType (data = {}) {
       sysDepartmentType(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.typeOptions = res.data
+          this.setOptions('type', this.props, res.data)
         }
       })
     },
@@ -229,58 +179,31 @@ export default {
     getCompartmentList (data = {}) {
       sysCompartmentList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.areaNameOptions = res.data
+          this.setOptions('areaName', this.props, res.data)
         }
       })
     },
     // Dialog 打开的回调
     openDialogHandle () {
-      if (!this.hasDetail) {
-        this.$nextTick(() => {
-          this.clearValidate()
-        })
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearValidate('departmentForm')
       }
       if (this.title === this.GLOBAL.EDIT) {
-        setTimeout(() => {
-          this.$refs.ruleForm.validate()
-        }, 10)
+        this.validate('departmentForm')
       }
     },
     // Dialog 关闭的回调
     closeDialogHandle () {
-      if (!this.hasDetail) {
-        this.resetForm()
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearForm('departmentForm')
       }
-      resetObject(this.form)
     },
     // 确定
     confirmHandle () {
-      let data = clonedeep(this.form)
-      this.$refs.ruleForm.validate((valid) => {
-        if (valid) {
-          console.log('submit!', data)
-          this.dialogVisible = false
-        } else {
-          return false
-        }
-      })
+      this.$refs.departmentForm.submitHandle()
     },
-    validate () {
-      this.$refs['ruleForm'].validate()
-    },
-    clearValidate () {
-      this.$refs['ruleForm'].clearValidate()
-    },
-    resetForm () {
-      this.$refs['ruleForm'].resetFields()
-    },
-    parentIdCurrentChangeHandle (data, node) {
-      this.form.parentId = data.id
-      this.form.parentName = data.name
-    },
-    areaNameCurrentChangeHandle (data, node) {
-      this.form.areaId = data.id
-      this.form.areaName = data.name
+    submitHandle (data) {
+      this.close()
     }
   }
 }

@@ -6,7 +6,7 @@
           <el-input v-model="searchContent.title" placeholder="请输入菜单名称"></el-input>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
       </el-form>
     </header-layout>
@@ -28,6 +28,7 @@
 </template>
 <script>
 import {sysLogList} from 'js/api/system/log'
+import merge from 'lodash/merge'
 import common from 'js/mixin/common'
 import headerLayout from 'components/_layout/headerLayout'
 import bodyLayout from 'components/_layout/bodyLayout'
@@ -108,9 +109,14 @@ export default {
     init () {
       this.getTableData()
     },
+    // 搜索
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      const result = merge(this.pagination, this.searchContent)
+      this.getTableData(result)
+    },
     // 获取table数据
     getTableData (data = {}) {
-      data = this.pagination
       this.table.loading = true
       sysLogList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
@@ -131,16 +137,6 @@ export default {
       this.title1 = '详情'
       this.$refs.logDialog.open()
       console.log('详情', index, row)
-    },
-    currentChangeHandle (val) {
-      this.pagination.page = val
-      this.getTableData(this.pagination)
-      console.log('currentChangeHandle', val)
-    },
-    sizeChangeHandle (val) {
-      this.pagination.limit = val
-      this.getTableData(this.pagination)
-      console.log('sizeChangeHandle', val)
     }
   }
 }

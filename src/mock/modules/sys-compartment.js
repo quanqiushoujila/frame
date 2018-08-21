@@ -1,6 +1,6 @@
 var dataList = [
   {
-    'id': 1,
+    'id': 2,
     'name': '西安市',
     'code': '610100000000',
     'comLevel': 2,
@@ -8,9 +8,10 @@ var dataList = [
     'parentName': '顶级菜单',
     'sort': 1,
     'state': 1,
+    'level': 1,
     'children': [
       {
-        'id': 2,
+        'id': 3,
         'name': '未央区',
         'code': '610112000000',
         'comLevel': 3,
@@ -18,7 +19,8 @@ var dataList = [
         'parentName': '西安市',
         'sort': 2,
         'state': 1,
-        'children': []
+        'children': [],
+        'level': 2
       }
     ]
   }

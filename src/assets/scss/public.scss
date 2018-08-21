@@ -1,6 +1,6 @@
 @import "./varibles.scss";
 // 登录页和mainIndex布局
-.main-container {
+.main-container  {
   height: 100vh;
   width: 100%;
   background-size: cover;
@@ -79,27 +79,29 @@
     }
   }
   .is-active {
-    background-color: #347ec9;
+    background-color: $blue3;
   }
 }
 
 .main-content {
   &.mini-show {
-    .el-tabs__header {
+    .main-tab > .el-tabs__header {
       left: $navMiniWidth;
     }
   }
-  .el-tabs__header {
-    position: fixed;
-    padding: 0 0px 0 0px;
-    top: $headerHeight;
-    left: $navWidth;
-    right: 0;
-    z-index: 100;
-    background-color: $grey;
-    .is-active {
-      background-color: #fff;
-      color: #8391a5;
+  .main-tab > {
+    .el-tabs__header {
+      position: fixed;
+      padding: 0 0px 0 0px;
+      top: $headerHeight;
+      left: $navWidth;
+      right: 0;
+      z-index: 100;
+      background-color: $grey;
+      .is-active {
+        background-color: #fff;
+        color: #8391a5;
+      }
     }
   }
 }
@@ -121,4 +123,45 @@
 // 高级搜索
 .is-more i {
   margin-left: -5px;
+}
+
+// 头像上传样式
+.avatar-uploader {
+  .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    &:hover {
+      border-color: #409EFF;
+    }
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
+}
+
+.upload-form {
+  .el-upload {
+    width: 100%;
+  }
+  .form-inline {
+    position: relative;
+  }
+  .upload-btn {
+    position: absolute;
+    right: 0px;
+    top: 0px
+  }
 }

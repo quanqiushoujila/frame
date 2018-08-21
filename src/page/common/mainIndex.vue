@@ -12,14 +12,12 @@
         </h2>
         <p>规范编辑  智能管理  关联应用  共享开放</p>
       </div>
-      <div class="main-index-content">
-        <ul class="clearfix">
-          <li v-for="(item, index) in menuIndexList" :key="item.id" class="pull-left">
-            <router-link :to="{name: 'main', params: {navId: index}}" @click.native="setParentNavId(item.id)">
-              <span><i class="iconfont" :class="item.remarks"></i>{{item.name}}</span>
-            </router-link>
-          </li>
-        </ul>
+      <div class="menu-content" :style="{'grid-auto-columns': 100 / menuIndexList.length}">
+        <div class="item" v-for="(item, index) in menuIndexList" :key="item.id">
+          <router-link :to="{name: 'main', params: {navId: index}}" @click.native="setParentNavId(item.id)">
+            <span><i class="iconfont" :class="item.remarks"></i>{{item.name}}</span>
+          </router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -44,10 +42,32 @@ export default {
     parentNavId: {
       get () { return this.$store.state.common.parentNavId },
       set (val) { this.$store.commit('common/updateParentNavId', val) }
+    },
+    mainTabs: {
+      get () { return this.$store.state.common.mainTabs },
+      set (val) { this.$store.commit('common/updateMainTabs', val) }
+    },
+    menuActiveName: {
+      get () { return this.$store.state.common.menuActiveName },
+      set (val) { this.$store.commit('common/updateMenuActiveName', val) }
+    },
+    mainTabsActiveName: {
+      get () { return this.$store.state.common.mainTabsActiveName },
+      set (val) { this.$store.commit('common/updateMainTabsActiveName', val) }
     }
   },
   created () {
     this.init()
+  },
+  beforeRouteEnter  (to, from, next) {
+    next(vm => {
+      if (to.name === 'mainIndex') {
+        vm.mainTabs.length = []
+        vm.menuActiveName = ''
+        vm.mainTabsActiveName = ''
+      }
+    })
+    next()
   },
   methods: {
     init () {
@@ -89,7 +109,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" type="" scoped>
 .main-index {
   background: url('../../assets/img/bg-index.jpg') top no-repeat;
   .main-wrapper {
@@ -99,33 +119,33 @@ export default {
   .main-slogan {
     padding-top: 120px;
   }
-  .main-index-content {
-    width: 1050px;
-    margin: 40px auto 10px;
-    ul {
-      li:first-child {
-        padding-left: 0;
-      }
-      li {
-        padding-left: 20px;
-        margin-bottom: 20px;
-        a {
-          color: #fff;
-          font-size: 16px;
+  .menu-content {
+    width: 100%;
+    max-width: 1100px;
+    display: grid;
+    grid-auto-flow: column;
+    margin: 0 auto;
+    align-items: center;
+    text-align: center;
+    .item {
+      align-items: center;
+      margin: 0 auto;
+      a {
+        color: #fff;
+        font-size: 16px;
+        display: block;
+        height: auto;
+        padding: 10px 5px;
+        border: 1px solid rgba(0, 0, 0, 0);
+        text-align: center;
+        &:hover {
+          border: 1px solid #43dcea;
+          border-radius: 5px;
+          color: #43dcea;
+        }
+        i {
+          font-size: 35px;
           display: block;
-          height: 100%;
-          padding: 2px 10px 7px;
-          border: 1px solid rgba(0, 0, 0, 0);
-          text-align: center;
-          &:hover {
-            border: 1px solid #43dcea;
-            border-radius: 5px;
-            color: #43dcea;
-          }
-          i {
-            font-size: 35px;
-            display: block;
-          }
         }
       }
     }

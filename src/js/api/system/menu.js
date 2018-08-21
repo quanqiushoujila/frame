@@ -23,3 +23,15 @@ export const sysMenuParentId = (data) => {
   const method = 'get'
   return request({url, method, data})
 }
+
+export const update = (data) => {
+  const url = $http.adornUrl('/sys/menu/update')
+  const method = 'put'
+  return request({url, method, data})
+}
+
+export const deletes = (data) => {
+  const url = $http.adornUrl('/sys/menu/delete')
+  const method = 'delete'
+  return request({url, method, data})
+}

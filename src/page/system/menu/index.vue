@@ -6,42 +6,45 @@
           <el-input v-model="searchContent.name" placeholder="请输入菜单名称"></el-input>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
         <el-form-item>
-          <add-btn @addClick="addHandle"/>
+          <add-btn @addHandle="addHandle"/>
         </el-form-item>
       </el-form>
     </header-layout>
     <body-layout>
       <k-table
+        @sizeChangeHandle="sizeChangeHandle"
+        @currentChangeHandle="currentChangeHandle"
         @detailHandle="detailHandle"
         @editHandle="editHandle"
         @deleteHandle="deleteHandle"
         @addChildHandle="addChildHandle"
-        @resultData="resultData"
         :table="tableTree"/>
     </body-layout>
 
     <!-- 新增修改详情 -->
     <menu-dialog
       ref="menuDialog"
-      :form="formData"
+      :formData="formData"
       :title="title1"
     />
   </div>
 </template>
 <script>
 import clonedeep from 'lodash/clonedeep'
+import merge from 'lodash/merge'
 import headerLayout from 'components/_layout/headerLayout'
 import bodyLayout from 'components/_layout/bodyLayout'
 import kTable from 'components/_table/table'
 import addBtn from 'components/_btn/addBtn'
 import searchBtn from 'components/_btn/searchBtn'
 import menuDialog from 'page/system/menu/menuDialog'
-import { sysMenuList } from 'js/api/system/menu'
+import {sysMenuList} from 'js/api/system/menu'
 import common from 'js/mixin/common'
-
+import {treeDataTranslate} from 'js/util/index'
+import isBoolean from 'lodash/isBoolean'
 export default {
   name: 'menuManage',
   components: {headerLayout, bodyLayout, kTable, addBtn, searchBtn, menuDialog},
@@ -60,19 +63,22 @@ export default {
           {
             prop: 'name',
             label: '菜单名称',
-            width: 400
+            width: '400px'
           },
           {
             prop: 'sort',
             label: '排序'
           }
         ],
-        hasSelect: false,
-        hasTreeTable: true,
-        treeTableKey: 'name',
+        hasSelect: true,
+        tree: {
+          hasTree: true,
+          treeKey: 'name',
+          expand: false,
+          checkStrictly: true
+        },
         // 操作
         operation: {
-          hasOperation: true,
           label: '操作',
           width: 250,
           minWidth: '',
@@ -100,7 +106,8 @@ export default {
           }]
         },
         pagination: {
-          hasPagination: false
+          total: 20,
+          limit: 10
         }
       },
       formData: {}
@@ -111,57 +118,41 @@ export default {
   },
   methods: {
     init () {
-      this.getTableTreeData()
+      this.getTableData(this.pagination)
     },
-    // 新增
-    addHandle () {
-      this.title1 = '新增'
+    open () {
       this.$refs.menuDialog.open()
-    },
-    // 详情
-    detailHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '详情'
-      this.$refs.menuDialog.open()
-      console.log('详情', index, row)
-    },
-    // 添加子级
-    addChildHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '添加子级菜单'
-      this.$refs.menuDialog.open()
-      console.log('添加子级菜单', index, row)
-    },
-    // 编辑
-    editHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '编辑'
-      this.$refs.menuDialog.open()
-      setTimeout(() => {
-        this.$refs.menuDialog.validate()
-      }, 10)
-      console.log('编辑', index, row)
-    },
-    // 删除
-    deleteHandle (index, row) {
-      this.confirmHandle('确定删除吗？').then(() => {
-        console.log('删除', index, row)
-      })
     },
     // 获取tabletree数据
-    getTableTreeData () {
+    getTableData (data = {}) {
       this.tableTree.loading = true
-      sysMenuList().then((res) => {
+      sysMenuList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.tableTree.data = res.data
+          const expand = this.tableTree.tree && isBoolean(this.tableTree.tree.expand) ? this.tableTree.tree.expand : false
+          this.tableTree.data = treeDataTranslate(res.data, expand)
           this.tableTree.loading = false
         }
       })
     },
-    // 接收treetabledata改变后的数据
-    resultData (data) {
-      this.tableTree.data = data
-    }
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      const result = merge(this.pagination, this.searchContent)
+      this.getTableData(result)
+    },
+    // 添加子级
+    addChildHandle (index, row) {
+      const data = clonedeep(row)
+      const childData = {
+        parentId: data.id,
+        parentName: data.name
+      }
+      this.formData = childData
+      this.title1 = '添加子级菜单'
+      this.open()
+      console.log('添加子级菜单', index, row)
+    },
+    // 删除接口方法
+    deleteApiHandle (id) {}
   }
 }
 </script>

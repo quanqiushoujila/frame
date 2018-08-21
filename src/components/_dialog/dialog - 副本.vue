@@ -31,11 +31,15 @@ export default {
   name: 'kDialog',
   data () {
     return {
-      dialogVisible: false,
       btnTypes: ['', 'primary', 'warning', 'info', 'success', 'danger']
     }
   },
   props: {
+    // 是否显示 Dialog
+    dialogVisible: {
+      type: Boolean,
+      default: false
+    },
     // Dialog 的标题
     title: {
       type: String,
@@ -119,16 +123,9 @@ export default {
     }
   },
   methods: {
-    open () {
-      this.dialogVisible = true
-    },
-    close () {
-      this.dialogVisible = false
-    },
     // 关闭前的回调，会暂停 Dialog 的关闭
     beforeCloseHandle (done) {
       this.$emit('beforeCloseHandle', done)
-      this.close()
     },
     // Dialog 打开的回调
     openDialogHandle () {
@@ -140,7 +137,6 @@ export default {
         this.$refs.dialogBody.scrollTo(0, 0)
       }, 100)
       this.$emit('closeDialogHandle')
-      this.close()
     },
     // 自定义方法
     clickHandle (fn) {

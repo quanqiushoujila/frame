@@ -9,10 +9,10 @@
           <el-input v-model="searchContent.code" placeholder="请输入行政区划代码"></el-input>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
         <el-form-item>
-          <add-btn @addClick="addHandle"/>
+          <add-btn @addHandle="addHandle"/>
         </el-form-item>
       </el-form>
     </header-layout>
@@ -23,20 +23,20 @@
         @editHandle="editHandle"
         @deleteHandle="deleteHandle"
         @childrenHandle="childrenHandle"
-        @resultData="resultData"
         :table="tableTree"/>
     </body-layout>
 
     <!-- 新增修改详情 -->
     <compartment-dialog
-      ref="menuDialog"
-      :form="formData"
+      ref="compartmentDialog"
+      :formData="formData"
       :title="title1"
     />
   </div>
 </template>
 <script>
 import clonedeep from 'lodash/clonedeep'
+import merge from 'lodash/merge'
 import headerLayout from 'components/_layout/headerLayout'
 import bodyLayout from 'components/_layout/bodyLayout'
 import kTable from 'components/_table/table'
@@ -45,6 +45,8 @@ import searchBtn from 'components/_btn/searchBtn'
 import compartmentDialog from 'page/system/compartment/compartmentDialog'
 import { sysCompartmentList } from 'js/api/system/compartment'
 import common from 'js/mixin/common'
+import {treeDataTranslate} from 'js/util/index'
+import isBoolean from 'lodash/isBoolean'
 
 export default {
   name: 'compartmentManage',
@@ -77,8 +79,9 @@ export default {
           }
         ],
         hasSelect: false,
-        hasTreeTable: true,
-        treeTableKey: 'name',
+        tree: {
+          treeKey: 'name'
+        },
         // 操作
         operation: {
           hasOperation: true,
@@ -120,66 +123,42 @@ export default {
   },
   methods: {
     init () {
-      this.getTableTreeData()
+      this.getTableData(this.pagination)
     },
-    // 搜索
-    searchHandle () {
-      const data = {name: this.searchContent.text}
-      this.getTableTreeData({data})
-    },
-    // 新增
-    addHandle () {
-      this.title1 = '新增'
-      this.$refs.menuDialog.open()
-    },
-    // 添加子级
-    childrenHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '添加子级行政区划'
-      this.$refs.menuDialog.open()
-      console.log('子级', index, row)
-    },
-    // 编辑
-    editHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '编辑'
-      this.$refs.menuDialog.open()
-      setTimeout(() => {
-        this.$refs.menuDialog.validate()
-      }, 10)
-      console.log('编辑', index, row)
-    },
-    // 删除
-    deleteHandle (index, row) {
-      this.confirmHandle('确定删除吗？').then(() => {
-        console.log('删除', index, row)
-      })
+    open () {
+      this.$refs.compartmentDialog.open()
     },
     // 获取tabletree数据
-    getTableTreeData () {
+    getTableData (data = {}) {
       this.tableTree.loading = true
-      sysCompartmentList().then((res) => {
+      sysCompartmentList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.tableTree.data = res.data
+          const expand = this.tableTree.tree && isBoolean(this.tableTree.tree.expand) ? this.tableTree.tree.expand : false
+          this.tableTree.data = treeDataTranslate(res.data, expand)
           this.tableTree.pagination.total = res.count
           this.tableTree.loading = false
         }
       })
     },
-    // 接收treetabledata改变后的数据
-    resultData (data) {
-      this.tableTree.data = data
+    // 搜索
+    searchHandle () {
+      const result = merge(this.pagination, this.searchContent)
+      this.getTableData(result)
     },
-    currentChangeHandle (val) {
-      this.pagination.page = val
-      this.getTableTreeData(this.pagination)
-      console.log('currentChangeHandle', val)
+    // 添加子级
+    childrenHandle (index, row) {
+      const data = clonedeep(row)
+      const childData = {
+        parentId: data.id,
+        parentName: data.name
+      }
+      this.formData = childData
+      this.title1 = '添加子级行政区划'
+      this.open()
+      console.log('子级', index, row)
     },
-    sizeChangeHandle (val) {
-      this.pagination.limit = val
-      this.getTableTreeData(this.pagination)
-      console.log('sizeChangeHandle', val)
-    }
+    // 删除接口方法
+    deleteApiHandle (id) {}
   }
 }
 </script>

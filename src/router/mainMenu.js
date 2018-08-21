@@ -3,7 +3,7 @@ import _import from './import'
 export const mainMenu = [
   { path: '/my1', name: 'my1', component: _import('my1/menu'), meta: {title: 'my1', isTab: false, navId: 0, isMain: true} },
   // 1
-  { path: '/my2', name: 'my2', component: _import('my2/menu'), meta: {title: 'my2', isTab: false, navId: 1, isMain: true} },
+  { path: '/catalog', name: 'catalog', component: _import('catalog/resourceCatalog/index'), meta: {title: '资源目录', isTab: false, navId: 1, isMain: true} },
   // 2
   { path: '/my3', name: 'my3', component: _import('my3/menu'), meta: {title: 'my3', isTab: false, navId: 2, isMain: true} },
   // 3

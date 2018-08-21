@@ -7,7 +7,7 @@ export default {
   name: 'exportBtn',
   methods: {
     click () {
-      this.$emit('exportClick')
+      this.$emit('exportHandle')
     }
   }
 }

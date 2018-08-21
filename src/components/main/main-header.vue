@@ -62,7 +62,7 @@ export default {
   props: {
     username: {
       type: String,
-      default: ''
+      default: 'username'
     },
     infoData: {
       type: Object,

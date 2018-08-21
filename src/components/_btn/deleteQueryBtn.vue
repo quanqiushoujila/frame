@@ -7,7 +7,7 @@ export default {
   name: 'deleteQueryBtn',
   methods: {
     click () {
-      this.$emit('deleteQueryClick')
+      this.$emit('deleteQueryHandle')
     }
   }
 }

@@ -38,7 +38,7 @@
           <el-button type="primary" class="btn-block" :disabled="btnDisabled"  @click="dataFormSubmit()">登录</el-button>
         </el-form>
       </div>
-      <footer class="copyright"></footer>
+      <footer class="copyright">国脉海洋信息发展有限公司 版权所有</footer>
     </div>
   </div>
 </template>

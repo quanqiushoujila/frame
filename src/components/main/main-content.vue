@@ -6,6 +6,7 @@
         v-model="mainTabsActiveName"
         :closable="true"
         type="card"
+        class="main-tab"
         @tab-click="selectedTabHandle"
         @tab-remove="removeTabHandle">
         <el-dropdown class="site-tabs__tools" :show-timeout="0" :body-style="siteContentViewHeight">

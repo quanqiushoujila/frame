@@ -1,11 +1,11 @@
 <!-- 新增编辑 -->
 <template>
   <k-dialog
+    ref="timeDia"
     :dialogVisible="dialogVisible"
     :title="title"
     :width="width"
-    :hasDetail="hasDetail"
-    @beforeCloseHandle="beforeCloseHandle"
+    :isBtnGroup="isBtnGroup"
     @closeDialogHandle="closeDialogHandle"
     @openDialogHandle="openDialogHandle"
     @cancelHandle="cancelHandle"
@@ -32,7 +32,6 @@
 import kDialog from 'components/_dialog/dialog'
 import kDetail from 'components/_form/detail'
 import kForm from 'components/_form/form'
-import {resetObject} from 'js/util'
 import formMixin from 'js/mixin/form'
 export default {
   name: 'timeDialog',
@@ -59,10 +58,8 @@ export default {
   },
   data () {
     return {
-      // 是否有详情页
-      hasDetail: true,
-      // 开关弹窗
-      dialogVisible: false,
+      formRef: 'timeForm',
+      dialogRef: 'timeDia',
       form: {
         jobId: '',
         beanName: '',
@@ -114,39 +111,26 @@ export default {
   methods: {
     // Dialog 打开的回调
     openDialogHandle () {
-      if (this.title === '编辑') {
-        setTimeout(() => {
-          this.$refs.timeForm.validate()
-        }, 10)
+      if (this.title === this.GLOBAL.EDIT) {
+        this.validate()
       }
-      if (!this.hasDetail) {
-        this.$nextTick(() => {
-          this.$refs.timeForm.clearValidate()
-        })
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearValidate()
       }
     },
     // Dialog 关闭的回调
     closeDialogHandle () {
-      if (!this.hasDetail) {
-        this.$refs.timeForm.resetForm()
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearForm()
       }
-      resetObject(this.form)
     },
     // 确定
     confirmHandle () {
       this.$refs.timeForm.submitHandle()
-    },
-    submitHandle () {
-      this.close()
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.rule-form {
-  .el-select, .el-cascader {
-    width: 100%;
-  }
-}
 </style>

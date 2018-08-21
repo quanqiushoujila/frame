@@ -38,6 +38,12 @@ export default {
         return []
       }
     },
+    selectTreeData: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
     levelKey: {
       type: String,
       default: 'level'
@@ -46,13 +52,9 @@ export default {
       type: String,
       default: 'children'
     },
-    expanded: {
+    treeKey: {
       type: String,
-      default: '_expanded'
-    },
-    show: {
-      type: String,
-      default: '_show'
+      default: 'id'
     }
   },
   data () {
@@ -65,7 +67,7 @@ export default {
       return { 'padding-left': (row[this.levelKey] > 1 ? row[this.levelKey] * 7 : 0) + 'px' }
     },
     iconClasses (row) {
-      return !row[this.expanded] ? 'el-icon-caret-right' : 'el-icon-caret-bottom'
+      return !row._expanded ? 'el-icon-caret-right' : 'el-icon-caret-bottom'
     },
     iconStyles (row) {
       return { 'visibility': this.hasChild(row) ? 'visible' : 'hidden' }
@@ -76,38 +78,34 @@ export default {
     // 切换处理
     toggleHandle (index, row) {
       if (this.hasChild(row)) {
-        let ids = []
-        let data = this.data
-        const children = row[this.childKey]
-        const hasOpen = !row[this.expanded]
-        ids.push({id: row.id, [this.expanded]: hasOpen})
-        this.setTreeData(children, ids, hasOpen)
-        for (let i = 0, len = data.length; i < len; i++) {
-          for (let j = 0, len1 = ids.length; j < len1; j++) {
-            if (data[i].id === ids[j].id) {
-              for (let key in ids[j]) {
-                if (data[i].hasOwnProperty(key)) {
-                  data[i][key] = ids[j][key]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    setTreeData (data, ids = [], status = false) {
-      let obj = {}
-      for (let i = 0, len = data.length; i < len; i++) {
-        if (status) {
-          obj = {id: data[i].id, [this.show]: status}
-          ids.push(obj)
+        let data = this.data.slice(0)
+        let selectData = this.selectTreeData.slice(0)
+        data[index]._expanded = !(data[index]._expanded ? data[index]._expanded : false)
+        if (data[index]._expanded) {
+          data = data.splice(0, index + 1).concat(row[this.childKey]).concat(data)
         } else {
-          obj = {id: data[i].id, [this.show]: status, [this.expanded]: status}
-          ids.push(obj)
-          const children = data[i].children
-          if (children && children.length > 0) {
-            this.setTreeData(children, ids, status)
-          }
+          data = this.removeChildNode(data, row)
+        }
+        this.$emit('resultData', data, selectData)
+      }
+      this.ids = []
+    },
+    // 移除子节点
+    removeChildNode (data, row) {
+      this.getIds(row[this.childKey])
+      return data.filter((item) => {
+        return this.ids.findIndex((val) => {
+          return val === item[this.treeKey]
+        }) === -1
+      })
+    },
+    getIds (row) {
+      for (let i = 0, len = row.length; i < len; i++) {
+        this.ids.push(row[i][this.treeKey])
+        delete row[i]._expanded
+        const childrenData = row[i][this.childKey]
+        if (isArray(childrenData) && childrenData.length > 0) {
+          this.getIds(childrenData)
         }
       }
     }

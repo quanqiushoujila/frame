@@ -20,7 +20,7 @@ export function resetObject (data) {
 }
 
 export function toggleDisabled (data, hasDisabled) {
-  var d = clonedeep(data)
+  let d = clonedeep(data)
   disabled(d, hasDisabled)
   return d
 }
@@ -61,25 +61,24 @@ export function isAuth (key) {
  * @param {*} id
  * @param {*} pid
  */
-export function treeDataTranslate (data, id = 'id', pid = 'parentId') {
-  var res = []
-  var temp = {}
-  for (var i = 0; i < data.length; i++) {
-    temp[data[i][id]] = data[i]
-  }
-  for (var k = 0; k < data.length; k++) {
-    if (temp[data[k][pid]] && data[k][id] !== data[k][pid]) {
-      if (!temp[data[k][pid]]['children']) {
-        temp[data[k][pid]]['children'] = []
+export function treeDataTranslate (data, expanded = false, id = 'id', pid = 'parentId') {
+  let res = []
+  getData(data)
+  function getData (data) {
+    for (let i = 0, len = data.length; i < len; i++) {
+      if (data[i].level > 1) {
+        data[i]['_show'] = expanded
+      } else {
+        data[i]['_show'] = true
       }
-      if (!temp[data[k][pid]]['_level']) {
-        temp[data[k][pid]]['_level'] = 1
+      data[i]._expanded = expanded
+      res.push(data[i])
+      const children = data[i].children
+      if (children && children.length > 0) {
+        getData(children)
       }
-      data[k]['_level'] = temp[data[k][pid]]._level + 1
-      temp[data[k][pid]]['children'].push(data[k])
-    } else {
-      res.push(data[k])
     }
+    return res
   }
   return res
 }
@@ -97,7 +96,6 @@ const responseType2 = 'application/json; charset=utf-8'
  * json: 'application/json; charset=utf-8'
  * form: 'application/x-www-form-urlencoded; charset=utf-8'
  */
-
 export function request ({url, method = 'post', data = {}, contentType = 'json', responseType}) {
   let type
   if (responseType === 'form') {

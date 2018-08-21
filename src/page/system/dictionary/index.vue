@@ -6,10 +6,10 @@
           <el-input v-model="searchContent.name" placeholder="请输入字典名称"></el-input>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
         <el-form-item>
-          <add-btn @addClick="addHandle"/>
+          <add-btn @addHandle="addHandle"/>
         </el-form-item>
       </el-form>
     </header-layout>
@@ -20,14 +20,13 @@
         @editHandle="editHandle"
         @deleteHandle="deleteHandle"
         @dictionaryChildrenHandle="dictionaryChildrenHandle"
-        @resultData="resultData"
         :table="tableTree"/>
     </body-layout>
 
     <!-- 新增修改详情 -->
     <dictionary-dialog
-      ref="menuDialog"
-      :form="formData"
+      ref="dictionaryDialog"
+      :formData="formData"
       :title="title1"
     />
   </div>
@@ -42,7 +41,8 @@ import searchBtn from 'components/_btn/searchBtn'
 import dictionaryDialog from 'page/system/dictionary/dictionaryDialog'
 import { sysDictionaryList } from 'js/api/system/dictionary'
 import common from 'js/mixin/common'
-
+import {treeDataTranslate} from 'js/util/index'
+import isBoolean from 'lodash/isBoolean'
 export default {
   name: 'dictionaryManage',
   components: {headerLayout, bodyLayout, kTable, addBtn, searchBtn, dictionaryDialog},
@@ -73,8 +73,9 @@ export default {
           }
         ],
         hasSelect: false,
-        hasTreeTable: true,
-        treeTableKey: 'name',
+        tree: {
+          treeKey: 'name'
+        },
         // 操作
         operation: {
           hasOperation: true,
@@ -116,63 +117,40 @@ export default {
   },
   methods: {
     init () {
-      this.getTableTreeData()
+      this.getTableTreeData(this.pagination)
     },
-    // 新增
-    addHandle () {
-      this.title1 = '新增'
-      this.$refs.menuDialog.open()
-    },
-    // 添加子级
-    dictionaryChildrenHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '添加字典项'
-      this.$refs.menuDialog.open()
-      console.log('字典项', index, row)
-    },
-    // 编辑
-    editHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '编辑'
-      this.$refs.menuDialog.open()
-      setTimeout(() => {
-        this.$refs.menuDialog.validate()
-      }, 10)
-      console.log('编辑', index, row)
-    },
-    // 删除
-    deleteHandle (index, row) {
-      this.confirmHandle('确定删除吗？').then(() => {
-        console.log('删除', index, row)
-      })
+    open () {
+      this.$refs.dictionaryDialog.open()
     },
     // 获取tabletree数据
-    getTableTreeData () {
+    getTableTreeData (data = {}) {
       this.tableTree.loading = true
-      sysDictionaryList().then((res) => {
+      sysDictionaryList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          console.log(1, res.data)
-          console.log(1, res.data instanceof Array)
-          this.tableTree.data = res.data
+          const expand = this.tableTree.tree && isBoolean(this.tableTree.tree.expand) ? this.tableTree.tree.expand : false
+          this.tableTree.data = treeDataTranslate(res.data, expand)
           this.tableTree.pagination.total = res.count
           this.tableTree.loading = false
         }
       })
     },
-    // 接收treetabledata改变后的数据
-    resultData (data) {
-      this.tableTree.data = data
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      this.getTableTreeData(this.searchContent)
     },
-    currentChangeHandle (val) {
-      this.pagination.page = val
-      this.getTableTreeData(this.pagination)
-      console.log('currentChangeHandle', val)
+    // 添加子级
+    dictionaryChildrenHandle (index, row) {
+      const data = clonedeep(row)
+      const childData = {
+        parentId: data.id
+      }
+      this.formData = childData
+      this.title1 = '添加字典项'
+      this.open()
+      console.log('字典项', index, row)
     },
-    sizeChangeHandle (val) {
-      this.pagination.limit = val
-      this.getTableTreeData(this.pagination)
-      console.log('sizeChangeHandle', val)
-    }
+    // 删除接口方法
+    deleteApiHandle (id) {}
   }
 }
 </script>

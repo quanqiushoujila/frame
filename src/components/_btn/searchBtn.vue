@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     click () {
-      this.$emit('searchClick')
+      this.$emit('searchHandle')
     },
     more () {
       this.$emit('more')

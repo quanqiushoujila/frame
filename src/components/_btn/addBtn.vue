@@ -7,7 +7,7 @@ export default {
   name: 'addBtn',
   methods: {
     click () {
-      this.$emit('addClick')
+      this.$emit('addHandle')
     }
   }
 }

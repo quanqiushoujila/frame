@@ -1,11 +1,10 @@
 <!-- 新增编辑 -->
 <template>
   <k-dialog
-    :dialogVisible="dialogVisible"
+    ref="userDia"
     :title="title"
     :width="width"
-    :hasDetail="hasDetail"
-    @beforeCloseHandle="beforeCloseHandle"
+    :isBtnGroup="isBtnGroup"
     @closeDialogHandle="closeDialogHandle"
     @openDialogHandle="openDialogHandle"
     @cancelHandle="cancelHandle"
@@ -15,6 +14,7 @@
       v-if="title === '详情'"
       :props="props"
       :data="formData"
+      ref="userDetail"
       />
     <k-form
       v-else
@@ -25,23 +25,7 @@
       :rules="rules"
       :data="formData"
     />
-    <div>
-      <el-form>
-        <el-form-item label="管理部门" label-width="100px">
-          <el-tree
-            :check-strictly="checkStrictly"
-            :data="tree"
-            show-checkbox
-            default-expand-all
-            node-key="id"
-            ref="tree"
-            highlight-current
-            @check="checkHandle"
-            :props="defaultProps">
-          </el-tree>
-        </el-form-item>
-      </el-form>
-    </div>
+    <!-- {{form}} -->
   </k-dialog>
 </template>
 
@@ -51,8 +35,8 @@ import kDetail from 'components/_form/detail'
 import kForm from 'components/_form/form'
 import {sysUserDeptName, sysUserRole, sysUserTree} from 'js/api/system/user'
 import {isMobile} from 'js/util/validate'
-import {resetObject} from 'js/util'
 import formMixin from 'js/mixin/form'
+
 export default {
   name: 'userDialog',
   components: {kDialog, kDetail, kForm},
@@ -88,10 +72,8 @@ export default {
       }
     }
     return {
-      // 是否有详情页
-      hasDetail: true,
-      // 开关弹窗
-      dialogVisible: false,
+      formRef: 'userForm',
+      dialogRef: 'userDia',
       form: {
         id: '',
         username: '',
@@ -100,6 +82,7 @@ export default {
         roleId: '',
         email: '',
         telephone: '',
+        // date: '',
         companyControl: []
       },
       props: [
@@ -134,6 +117,11 @@ export default {
           label: '电话',
           prop: 'telephone',
           inputType: 'input'
+        },
+        {
+          label: '管理部门',
+          prop: 'companyControl',
+          inputType: 'tree'
         }
       ],
       rules: {
@@ -158,14 +146,7 @@ export default {
           { validator: checkTelephone, trigger: 'blur' }
         ]
       },
-      // 管理部门
-      tree: [],
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
-      // 在显示复选框的情况下，是否严格的遵循父子不互相关联的做法
-      checkStrictly: true
+      oldRules: {}
     }
   },
   created () {
@@ -176,17 +157,13 @@ export default {
       this.getDeptName()
       this.getRole()
       this.getTree()
+      this.oldRules = this.rules
     },
     // 所属单位数据
     getDeptName (data = {}) {
       sysUserDeptName(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.props.forEach((item) => {
-            if (item.prop === 'deptName') {
-              item.options = res.data
-              return false
-            }
-          })
+          this.setOptions('deptName', this.props, res.data)
         }
       })
     },
@@ -194,12 +171,7 @@ export default {
     getRole () {
       sysUserRole().then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.props.forEach((item) => {
-            if (item.prop === 'roleId') {
-              item.options = res.data
-              return false
-            }
-          })
+          this.setOptions('roleId', this.props, res.data)
         }
       })
     },
@@ -207,37 +179,34 @@ export default {
     getTree () {
       sysUserTree().then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
-          this.tree = res.data
+          this.setOptions('companyControl', this.props, res.data)
         }
       })
     },
     // Dialog 打开的回调
     openDialogHandle () {
       this.$nextTick(() => {
-        if (this.title === this.GLOBAL.ADD) {
-          this.initTree([])
+        if (this.title === this.GLOBAL.DETAIL) {
+          this.$refs.userDetail.openInitTree('companyControl')
         } else {
-          this.initTree(this.form.companyControl)
+          this.$refs.userForm.openInitTree('companyControl')
         }
       })
-      if (this.title === this.GLOBAL.EDIT) {
-        setTimeout(() => {
-          this.$refs.userForm.validate()
-        }, 10)
+
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearValidate()
       }
-      if (!this.hasDetail) {
-        this.$nextTick(() => {
-          this.$refs.userForm.clearValidate()
-        })
+
+      if (this.title === this.GLOBAL.EDIT) {
+        this.validate()
       }
     },
     // Dialog 关闭的回调
     closeDialogHandle () {
-      if (!this.hasDetail) {
-        this.$refs.userForm.resetForm()
+      if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearForm()
+        this.$refs.userForm.clearTree('companyControl')
       }
-      this.initTree([])
-      resetObject(this.form)
     },
     // 确定
     confirmHandle () {
@@ -245,15 +214,6 @@ export default {
     },
     submitHandle () {
       this.close()
-    },
-    // 初始化tree
-    initTree (val = []) {
-      this.formData.companyControl = val
-      // this.$set(this.formData, 'companyControl', val)
-      this.$refs.tree.setCheckedKeys(val)
-    },
-    checkHandle (heckedNodes, checkedKeys, halfCheckedNodes, halfCheckedKeys) {
-      this.formData.companyControl = checkedKeys.checkedKeys
     }
   }
 }

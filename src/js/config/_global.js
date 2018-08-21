@@ -4,6 +4,6 @@ export default {
   ERROR: 1, // ajax失败 code: 1
   DETAIL: '详情',
   EDIT: '编辑',
-  ADD: '添加',
+  ADD: '新增',
   ADDCHILD: '添加子级菜单'
 }

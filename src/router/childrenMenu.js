@@ -2,6 +2,9 @@ import _import from './import'
 import { mainMenu } from './mainMenu'
 
 export let children = [
+  // 数据目录
+  { path: '/catalog/resourcesCatalog', name: 'resourcesCatalog', component: _import('catalog/resourceCatalog/index'), meta: {title: '资源目录', isTab: true, navId: 1} },
+  // 系统配置
   { path: '/system/menu', name: 'menu', component: _import('system/menu/index'), meta: {title: '菜单管理', isTab: true, navId: 9} },
   { path: '/system/compartment', name: 'compartment', component: _import('system/compartment/index'), meta: {title: '行政区划', isTab: true, navId: 9} },
   { path: '/system/parame', name: 'parame', component: _import('system/parame/index'), meta: {title: '参数配置', isTab: true, navId: 9} },

@@ -6,16 +6,16 @@
           <el-input v-model="searchContent.realname" placeholder="请输入登录名"></el-input>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
         <el-form-item>
-          <add-btn @addClick="addHandle"/>
+          <add-btn @addHandle="addHandle"/>
         </el-form-item>
         <el-form-item>
-          <delete-query-btn @deleteQueryClick="deleteQueryHandle"/>
+          <delete-query-btn @deleteQueryHandle="deleteQueryHandle"/>
         </el-form-item>
         <el-form-item>
-          <export-btn @exportClick="exportHandle"/>
+          <export-btn @exportHandle="exportHandle"/>
         </el-form-item>
       </el-form>
     </header-layout>
@@ -28,7 +28,8 @@
         @editHandle="editHandle"
         @deleteHandle="deleteHandle"
         @repeatPasswordHandle="repeatPasswordHandle"
-        :table="table"/>
+        :table="table">
+      </k-table>
     </body-layout>
 
     <!-- 新增修改详情 -->
@@ -44,8 +45,9 @@
   </div>
 </template>
 <script>
-import clonedeep from 'lodash/clonedeep'
-import {resetObject} from 'js/util'
+// import clonedeep from 'lodash/clonedeep'
+// import {resetObject} from 'js/util'
+import merge from 'lodash/merge'
 import { sysUserList } from 'js/api/system/user'
 import common from 'js/mixin/common'
 import headerLayout from 'components/_layout/headerLayout'
@@ -96,30 +98,35 @@ export default {
           type: 'text',
           minWidth: '',
           // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
-          data: [{
-            type: '',
-            label: '详情',
-            id: 1,
-            fn: 'detailHandle',
-            permission: 'sys:user:info'
-          }, {
-            type: 'warning',
-            label: '编辑',
-            id: 2,
-            fn: 'editHandle',
-            permission: 'sys:user:update'
-          }, {
-            type: 'danger',
-            label: '删除',
-            id: 3,
-            fn: 'deleteHandle',
-            permission: 'sys:user:delete'
-          }, {
-            type: '',
-            label: '重置密码',
-            id: 4,
-            fn: 'repeatPasswordHandle'
-          }]
+          data: [
+            {
+              type: '',
+              label: '详情',
+              id: 1,
+              fn: 'detailHandle',
+              permission: 'sys:user:info'
+            },
+            {
+              type: 'warning',
+              label: '编辑',
+              id: 2,
+              fn: 'editHandle',
+              permission: 'sys:user:update'
+            },
+            {
+              type: 'danger',
+              label: '删除',
+              id: 3,
+              fn: 'deleteHandle',
+              permission: 'sys:user:delete'
+            },
+            {
+              type: '',
+              label: '重置密码',
+              id: 4,
+              fn: 'repeatPasswordHandle'
+            }
+          ]
         },
         pagination: {
           hasPagination: true,
@@ -146,24 +153,11 @@ export default {
     init () {
       this.getTableData()
     },
-    // 搜索
-    searchHandle () {
-      console.log('搜索', this.searchContent)
-      this.getTableData(this.searchContent)
-    },
-    // 添加操作
-    addHandle () {
-      this.resetFormData()
-      this.title1 = '新增'
+    open () {
       this.$refs.userDialog.open()
-    },
-    // 导入
-    exportHandle () {
-      this.$refs.export.open()
     },
     // 获取table数据
     getTableData (data = {}) {
-      data = this.pagination
       this.table.loading = true
       sysUserList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
@@ -173,52 +167,28 @@ export default {
         }
       })
     },
-    // 详情
-    detailHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '详情'
-      this.$refs.userDialog.open()
-      console.log('详情', index, row)
+    // 搜索
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      const result = merge(this.pagination, this.searchContent)
+      this.getTableData(result)
     },
-    // 编辑
-    editHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '编辑'
-      this.$refs.userDialog.open()
-      console.log('编辑', index, row)
+    // 添加操作
+    addHandle () {
+      this.title1 = this.GLOBAL.ADD
+      this.open()
     },
-    // 删除
-    deleteHandle (index, row) {
-      this.confirmHandle('确定删除吗？').then(() => {
-        console.log('删除', index, row)
-      })
+    // 导入
+    exportHandle () {
+      this.$refs.export.open()
     },
+    // 删除接口方法
+    deleteApiHandle (id) {},
     // 重置密码
     repeatPasswordHandle (index, row) {
-      this.confirmHandle('确定重置密码吗？').then(() => {
-        console.log('重置密码', index, row)
-      })
-    },
-    // table checkbox选择
-    selectionChangeHandle (val) {
-      const ids = val.map((item) => {
-        return item.id
-      })
-      this.deleteQueryData = ids
-    },
-    currentChangeHandle (val) {
-      this.pagination.page = val
-      this.getTableData(this.pagination)
-      console.log('currentChangeHandle', val)
-    },
-    sizeChangeHandle (val) {
-      this.pagination.limit = val
-      this.getTableData(this.pagination)
-      console.log('sizeChangeHandle', val)
-    },
-    // 初始化数据
-    resetFormData () {
-      this.formData = resetObject(this.formData)
+      this.$confirm('确定重置密码吗？').then(() => {
+        console.log('重置密码成功', index, row)
+      }).catch(() => {})
     }
   }
 }

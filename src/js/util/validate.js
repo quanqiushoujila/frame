@@ -29,3 +29,43 @@ export function isPhone (s) {
 export function isURL (s) {
   return /^http[s]?:\/\/.*/.test(s)
 }
+
+/**
+ * 数字
+ * @param {*} s
+ */
+export function isNumber (s) {
+  return /\d+/.test(s)
+}
+
+/**
+ * 英文和数字
+ * @param {*} s
+ */
+export function isEnglishAndNumber (s) {
+  return /^[A-Za-z0-9]+$/.test()
+}
+
+/**
+ * 汉字
+ * @param {*} s
+ */
+export function isChinese (s) {
+  return /^[\u4e00-\u9fa5]{0,}$/.test(s)
+}
+
+/**
+ * 数字、26个英文字母或者下划线
+ * @param {*} s
+ */
+export function isNormal (s) {
+  return /^\w+$/.test(s)
+}
+
+/**
+ * 正数、和小数
+ * @param {*} s
+ */
+export function isN (s) {
+  return /^\d+(\.\d+)?$/.test(s)
+}

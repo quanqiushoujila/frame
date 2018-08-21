@@ -1,11 +1,8 @@
 ﻿<template>
   <k-dialog
-    :dialogVisible="dialogVisible"
+    ref="logDia"
     :title="title"
     :width="width"
-    @beforeCloseHandle="beforeCloseHandle"
-    @closeDialogHandle="closeDialogHandle"
-    @openDialogHandle="openDialogHandle"
     >
     <el-row>
       <el-col :span="12">
@@ -30,13 +27,16 @@
 
 <script>
 import kDialog from 'components/_dialog/dialog'
-import logDetail from 'components/_other/logDetail'
+import logDetail from 'components/_form/logDetail'
+import formMixin from 'js/mixin/form'
 export default {
   name: 'logDialog',
+  components: {kDialog, logDetail},
+  mixins: [formMixin],
   props: {
     title: {
       type: String,
-      default: 'ÌáÊ¾'
+      default: '提示'
     },
     width: {
       type: String,
@@ -51,21 +51,10 @@ export default {
   },
   data () {
     return {
-      dialogVisible: false
+      dialogRef: 'logDia'
     }
   },
-  components: {kDialog, logDetail},
   methods: {
-    open () {
-      this.dialogVisible = true
-    },
-    openDialogHandle () {
-    },
-    closeDialogHandle () {
-    },
-    beforeCloseHandle () {
-      this.dialogVisible = false
-    }
   }
 }
 </script>

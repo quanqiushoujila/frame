@@ -1,6 +1,6 @@
 var dataList = [
   {
-    'jobId': 7,
+    'id': 7,
     'beanName': 'quartzTask',
     'methodName': 'deleteFile',
     'params': '',
@@ -11,7 +11,7 @@ var dataList = [
     'createTime': '2018-07-04 16:16:21'
   },
   {
-    'jobId': 6,
+    'id': 6,
     'beanName': 'quartzTask',
     'methodName': 'run',
     'params': '',
@@ -22,7 +22,7 @@ var dataList = [
     'createTime': '2018-06-28 11:59:43'
   },
   {
-    'jobId': 4,
+    'id': 4,
     'beanName': 'quartzTask',
     'methodName': 'targetDown',
     'params': '',
@@ -33,7 +33,7 @@ var dataList = [
     'createTime': '2018-06-13 16:10:56'
   },
   {
-    'jobId': 3,
+    'id': 3,
     'beanName': 'quartzTask',
     'methodName': 'infoDown',
     'params': '',
@@ -44,7 +44,7 @@ var dataList = [
     'createTime': '2018-06-08 09:15:50'
   },
   {
-    'jobId': 2,
+    'id': 2,
     'beanName': 'testTask',
     'methodName': 'test2',
     'params': '',
@@ -55,7 +55,7 @@ var dataList = [
     'createTime': '2017-06-03 14:55:56'
   },
   {
-    'jobId': 1,
+    'id': 1,
     'beanName': 'testTask',
     'methodName': 'test',
     'params': 'para',

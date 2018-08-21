@@ -8,6 +8,7 @@ var dataList = [
     'value': 'show_hide',
     'type': 1,
     'sort': 1,
+    'level': 1,
     'children': [
       {
         'id': 11,
@@ -17,7 +18,8 @@ var dataList = [
         'name': '显示',
         'value': '1',
         'type': 2,
-        'sort': 11
+        'sort': 11,
+        'level': 2
       }
     ]
   }

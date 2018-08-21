@@ -6,13 +6,13 @@
           <el-input v-model="searchContent.beanName" placeholder="bean名称"></el-input>
         </el-form-item>
         <el-form-item>
-          <search-btn @searchClick="searchHandle"/>
+          <search-btn @searchHandle="searchHandle"/>
         </el-form-item>
         <el-form-item>
-          <add-btn @addClick="addHandle"/>
+          <add-btn @addHandle="addHandle"/>
         </el-form-item>
         <el-form-item>
-          <delete-query-btn @deleteQueryClick="deleteQueryHandle"/>
+          <delete-query-btn @deleteQueryHandle="deleteQueryHandle"/>
         </el-form-item>
         <el-form-item>
           <el-button
@@ -60,8 +60,8 @@
   </div>
 </template>
 <script>
-import clonedeep from 'lodash/clonedeep'
-import {resetObject} from 'js/util'
+// import clonedeep from 'lodash/clonedeep'
+import merge from 'lodash/merge'
 import { sysTimeList } from 'js/api/system/time'
 import common from 'js/mixin/common'
 import headerLayout from 'components/_layout/headerLayout'
@@ -154,17 +154,13 @@ export default {
   },
   methods: {
     init () {
-      this.getTableData()
+      this.getTableData(this.pagination)
     },
-    // 添加操作
-    addHandle () {
-      this.resetFormData()
-      this.title1 = '新增'
+    open () {
       this.$refs.timeDialog.open()
     },
     // 获取table数据
     getTableData (data = {}) {
-      data = this.pagination
       this.table.loading = true
       sysTimeList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
@@ -174,73 +170,43 @@ export default {
         }
       })
     },
-    // 详情
-    detailHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '详情'
+    searchHandle () {
+      const result = merge(this.pagination, this.searchContent)
+      this.getTableData(result)
+    },
+    // 添加操作
+    addHandle () {
+      this.title1 = this.GLOBAL.ADD
       this.$refs.timeDialog.open()
-      console.log('详情', index, row)
     },
-    // 编辑
-    editHandle (index, row) {
-      this.formData = clonedeep(row)
-      this.title1 = '编辑'
-      this.$refs.timeDialog.open()
-      console.log('编辑', index, row)
-    },
-    // 删除
-    deleteHandle (index, row) {
-      this.confirmHandle('确定删除吗？').then(() => {
-        console.log('删除', index, row)
-      })
-    },
-    // table checkbox选择
-    selectionChangeHandle (val) {
-      const ids = val.map((item) => {
-        return item.jobId
-      })
-      this.deleteQueryData = ids
-    },
-    currentChangeHandle (val) {
-      this.pagination.page = val
-      this.getTableData(this.pagination)
-      console.log('currentChangeHandle', val)
-    },
-    sizeChangeHandle (val) {
-      this.pagination.limit = val
-      this.getTableData(this.pagination)
-      console.log('sizeChangeHandle', val)
-    },
-    // 初始化数据
-    resetFormData () {
-      this.formData = resetObject(this.formData)
-    },
+    // 删除接口方法
+    deleteApiHandle (id) {},
     // 立即执行
     implementHandle () {
-      if (this.deleteQueryData.length > 0) {
-        this.confirmHandle('确定要立即执行吗').then(() => {
-          console.log('立即执行成功！！', this.deleteQueryData)
-        })
+      if (this.queryData.length > 0) {
+        this.$confirm('确定要立即执行吗').then(() => {
+          console.log('立即执行成功！！', this.queryData)
+        }).catch(() => {})
       } else {
         this.warningHandle('未选择不能立即执行,请选择后操作')
       }
     },
     // 回复
     replyHandle () {
-      if (this.deleteQueryData.length > 0) {
-        this.confirmHandle('确定要回复吗').then(() => {
-          console.log('回复成功！！', this.deleteQueryData)
-        })
+      if (this.queryData.length > 0) {
+        this.$confirm('确定要回复吗').then(() => {
+          console.log('回复成功！！', this.queryData)
+        }).catch(() => {})
       } else {
         this.warningHandle('未选择不能回复,请选择后操作')
       }
     },
     // 暂停
     stopHandle () {
-      if (this.deleteQueryData.length > 0) {
-        this.confirmHandle('确定要暂停吗').then(() => {
-          console.log('暂停成功！！', this.deleteQueryData)
-        })
+      if (this.queryData.length > 0) {
+        this.$confirm('确定要暂停吗').then(() => {
+          console.log('暂停成功！！', this.queryData)
+        }).catch(() => {})
       } else {
         this.warningHandle('未选择不能暂停,请选择后操作')
       }

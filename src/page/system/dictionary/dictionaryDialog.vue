@@ -1,11 +1,11 @@
 <!-- 新增编辑 -->
 <template>
   <k-dialog
+    ref="dictionaryDia"
     :dialogVisible="dialogVisible"
     :title="title"
     :width="width"
-    :hasDetail="hasDetail"
-    @beforeCloseHandle="beforeCloseHandle"
+    :isBtnGroup="isBtnGroup"
     @closeDialogHandle="closeDialogHandle"
     @openDialogHandle="openDialogHandle"
     @cancelHandle="cancelHandle"
@@ -23,11 +23,11 @@
 </template>
 
 <script>
-// import deepclone from 'lodash/deepclone'
+// import clonedeep from 'lodash/clonedeep'
 import kDialog from 'components/_dialog/dialog'
 import kForm from 'components/_form/form'
 import {sysDictionaryType} from 'js/api/system/dictionary'
-import {resetObject} from 'js/util'
+// import {resetObject} from 'js/util'
 import formMixin from 'js/mixin/form'
 const DICTIONARY = '添加字典项'
 
@@ -61,7 +61,8 @@ export default {
   },
   data () {
     return {
-      hasDetail: false,
+      formRef: 'dictionaryForm',
+      dialogRef: 'dictionaryDia',
       searchContent: {
         name: ''
       },
@@ -108,9 +109,7 @@ export default {
         sort: [
           { required: true, message: '不能为空', trigger: 'blur' }
         ]
-      },
-      // 类型数据
-      typeOptions: []
+      }
     }
   },
   created () {
@@ -130,29 +129,22 @@ export default {
     },
     // Dialog 打开的回调
     openDialogHandle () {
-      if (this.title === this.GLOBAL.EDIT) {
-        this.$nextTick(() => {
-          this.$refs.dictionaryForm.validate()
-        })
+      if (this.title === DICTIONARY || this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearValidate()
       }
-      if (this.title === DICTIONARY) {
-        // let parentId = clonedeep(this.formData.parentId)
-        resetObject(this.formData)
-        this.form.parentId = parentId
-        // resetObject(this.form)
+      if (this.title === this.GLOBAL.EDIT) {
+        this.validate()
       }
     },
     // Dialog 关闭的回调
     closeDialogHandle () {
-      this.$refs.dictionaryForm.resetForm()
-      resetObject(this.form)
+      if (this.title === DICTIONARY || this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
+        this.clearForm()
+      }
     },
     // 确定
     confirmHandle () {
       this.$refs.dictionaryForm.submitHandle()
-    },
-    submitHandle () {
-      this.close()
     }
   }
 }
@@ -164,13 +156,13 @@ export default {
     width: 100%;
   }
 }
-.max-height {
-  overflow: auto;
-  min-height: 150px;
-  max-height: 300px;
-  .el-button {
-    padding: 8px !important;
-    margin: 8px 0 0 8px !important;
-  }
-}
+// .max-height {
+//   overflow: auto;
+//   min-height: 150px;
+//   max-height: 300px;
+//   .el-button {
+//     padding: 8px !important;
+//     margin: 8px 0 0 8px !important;
+//   }
+// }
 </style>
