@@ -12,7 +12,7 @@
         </h2>
         <p>规范编辑  智能管理  关联应用  共享开放</p>
       </div>
-      <div class="menu-content" :style="{'grid-auto-columns': 100 / menuIndexList.length}">
+      <div class="menu-content" :style="{'width': menuIndexList.length * 90 + 'px'}">
         <div class="item" v-for="(item, index) in menuIndexList" :key="item.id">
           <router-link :to="{name: 'main', params: {navId: index}}" @click.native="setParentNavId(item.id)">
             <span><i class="iconfont" :class="item.remarks"></i>{{item.name}}</span>
@@ -23,7 +23,8 @@
   </div>
 </template>
 <script>
-import { mainAll } from 'js/api/common/nav'
+import { mainAll, dicList } from 'js/api/common/nav'
+import {setSession} from 'js/util/session'
 export default {
   name: 'main-index',
   data () {
@@ -73,6 +74,19 @@ export default {
     init () {
       this.fullscreenLoading = true
       this.getSessionOrApi()
+      this.getDicData()
+    },
+    getDicData () {
+      dicList().then((res) => {
+        if (res.code === this.GLOBAL.SUCCESS) {
+          const data = res.data
+          let obj = {}
+          for (let i = 0, len = data.length; i < len; i++) {
+            obj[data[i].value] = data[i].children
+          }
+          setSession('dicList', obj || {})
+        }
+      })
     },
     getSessionOrApi () {
       const list = sessionStorage.getItem('menuIndexList')
@@ -94,9 +108,9 @@ export default {
           const menuIndexList = data.mainIndex
           const permissions = data.permissions
           const menuList = data.main
-          sessionStorage.setItem('menuIndexList', JSON.stringify(menuIndexList) || '[]')
-          sessionStorage.setItem('permissions', JSON.stringify(permissions) || '{}')
-          sessionStorage.setItem('menuList', JSON.stringify(menuList) || '[]')
+          setSession('menuIndexList', menuIndexList || '[]')
+          setSession('permissions', permissions || '[]')
+          setSession('menuList', menuList || '[]')
           this.menuIndexList = menuIndexList
         }
         this.fullscreenLoading = false
@@ -121,15 +135,16 @@ export default {
   }
   .menu-content {
     width: 100%;
-    max-width: 1100px;
-    display: grid;
-    grid-auto-flow: column;
+    // height: 76px;
     margin: 0 auto;
-    align-items: center;
     text-align: center;
+    overflow: hidden;
     .item {
-      align-items: center;
+      display: block;
       margin: 0 auto;
+      padding: 5px;
+      width: 80px;
+      float: left;
       a {
         color: #fff;
         font-size: 16px;

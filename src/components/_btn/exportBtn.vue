@@ -1,6 +1,6 @@
 <!-- 导出按钮 -->
 <template>
-  <el-button @click="click" type="info" icon="el-icon-news">导入</el-button>
+  <el-button @click="click" type="info" icon="el-icon-news">导出</el-button>
 </template>
 <script>
 export default {

@@ -1,6 +1,7 @@
 <!-- 新增编辑 -->
 <template>
   <k-dialog
+    :fullscreen="fullscreen"
     ref="userDia"
     :title="title"
     :width="width"
@@ -11,6 +12,7 @@
     @confirmHandle="confirmHandle"
     >
     <k-detail
+      :column="column"
       v-if="title === '详情'"
       :props="props"
       :data="formData"
@@ -18,6 +20,7 @@
       />
     <k-form
       v-else
+      :column="column"
       @submitHandle="submitHandle"
       ref="userForm"
       :form="form"
@@ -58,6 +61,10 @@ export default {
       default () {
         return {}
       }
+    },
+    fullscreen: {
+      type: Boolean,
+      default: true
     }
   },
   data () {
@@ -72,6 +79,7 @@ export default {
       }
     }
     return {
+      column: 2,
       formRef: 'userForm',
       dialogRef: 'userDia',
       form: {
@@ -208,11 +216,8 @@ export default {
         this.$refs.userForm.clearTree('companyControl')
       }
     },
-    // 确定
-    confirmHandle () {
-      this.$refs.userForm.submitHandle()
-    },
     submitHandle () {
+      this.toggleDisabledButton()
       this.close()
     }
   }

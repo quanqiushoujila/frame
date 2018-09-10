@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title></title>
+</head>
+<body>
+  <div id="app" class="container">
+    <div class="header-layout">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input v-model="searchContent.title" placeholder="请输入菜单名称"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="body-layout">
+      <k-table
+        @size-change-handle="sizeChangeHandle"
+        @current-change-handle="currentChangeHandle"
+        @detail-handle="detailHandle"
+        :table="table"/>
+
+    </div>
+    <!-- 新增修改详情 -->
+    <k-dialog
+      ref="logDialog"
+      :dialog-visible="dialogVisible"
+      :title="title"
+      :width="'65%'"
+      @before-close-handle="beforeCloseHandle"
+      >
+      <el-row>
+        <el-col :span="12">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span class="text-center" v-text="'操作数据前'"></span>
+            </div>
+            <k-log-detail :data="formData.old" />
+          </el-card>
+        </el-col>
+        <el-col :span="12">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span class="text-center" v-text="'操作数据后'"></span>
+            </div>
+            <k-log-detail :data="formData.new" />
+          </el-card>
+        </el-col>
+      </el-row>
+    </k-dialog>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../component/form/logDetail.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/page/system/log/logDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/log.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, logDialog],
+      data: function() {
+        return {
+          queryData: [],
+          dialogVisible: false,
+          searchContent: {
+            title: ''
+          },
+          table: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                label: '模块',
+                prop: 'module'
+              },
+              {
+                label: '菜单',
+                prop: 'menu'
+              },
+              {
+                label: '操作人',
+                prop: 'username'
+              },
+              {
+                label: '操作时间',
+                prop: 'createDate'
+              },
+              {
+                label: '日志类型',
+                prop: 'operation'
+              }
+            ],
+            hasSelect: true,
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 50,
+              type: 'text',
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                type: '',
+                label: '详情',
+                id: 1,
+                fn: 'detail-handle',
+                permission: ''
+              }]
+            },
+            pagination: {
+              hasPagination: true,
+              total: 0
+            }
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          formData: {},
+          title: ''
+        }
+      },
+      created: function() {
+        this.getTableData()
+      },
+      methods: {
+        // 获取table数据
+        getTableData: function(data) {
+          data = this.pagination
+          this.table.loading = true
+          var self = this;
+          api({
+            url: '/sys/log/list',
+            type: 'get',
+            successFuc: function(res) {
+              if (res.code === CONFIG.SUCCESS) {
+                console.log(res.data)
+                self.table.data = res.data
+                self.table.pagination.total = res.count
+                self.table.loading = false
+              }
+            }
+          })
+        },
+        // 详情
+        detailHandle: function(index, row) {
+          console.log(index, row)
+          const newDate = row.newValues.split(';')
+          const oldDate = row.oldValues.split(';')
+          console.log('new Data: ', newDate)
+          this.formData.new = newDate
+          console.log(this.formData.new)
+          this.formData.old = oldDate
+          console.log(this.formData)
+          this.title = '详情'
+          this.$refs.logDialog.open()
+        },
+        currentChangeHandle: function(val) {
+          this.pagination.page = val
+          this.getTableData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function(val) {
+          this.pagination.limit = val
+          this.getTableData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        }
+      }
+    })
+  </script>
+</body>
+</html>

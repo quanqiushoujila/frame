@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <link rel="stylesheet" href="../../../css/common/system.css">
+  <title></title>
+</head>
+<body>
+  <div id="app" class="container">
+    <div class="header-layout">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input v-model="searchContent.realname" placeholder="请输入登录名"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="body-layout">
+      <!-- 表格 -->
+      <k-table
+        @detail-handle="detailHandle"
+        @edit-handle="editHandle"
+        @delete-handle="deleteHandle"
+        @add-child-handle="addChildHandle"
+        :table="tableTree">
+      </k-table>
+      <!-- 表格结束 -->
+    </div>
+    <!-- 新增修改详情弹窗 -->
+    <k-dialog
+      ref="menuDialog"
+      :title="title1"
+      :width="width"
+      :is-btn-group="isBtnGroup"
+      @close-dialog-handle="closeDialogHandle"
+      @open-dialog-handle="openDialogHandle"
+      @confirm-handle="confirmHandle"
+      @cancel-handle="cancelHandle"
+      >
+      <template v-if="title1 === '详情'">
+        <k-detail
+          v-if="title1 === '详情'"
+          :props="props"
+          :data="formData"
+          >
+        </k-detail>
+      </template>
+      <template v-else>
+        <k-form
+          @submit-handle="submitHandle"
+          ref="menuForm"
+          :form="form"
+          :form-props="props"
+          :rules="rules"
+          :data="formData"
+          :other-data="otherData">
+          <div slot="iconForm">
+            <el-popover
+              v-model="iconVisible"
+              placement="top-start"
+              width="400"
+              trigger="click">
+              <div class="max-height">
+                <el-button
+                  @click="iconChangeHandle(item)"
+                  size="mini"
+                  v-for="(item, index) in icons"
+                  :key="index" >
+                  <i class="iconfont" :class="item"></i>
+                </el-button>
+              </div>
+              <el-input v-model="otherData.icon" readonly slot="reference"></el-input>
+            </el-popover>
+          </div>
+        </k-form>
+      </template>
+    </k-dialog>
+    <!-- 新增修改详情弹窗结束 -->
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../js/icon.js"></script>
+  <script src="../../../js/page/system/menu/menuDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/menu.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, menuDialog],
+      data: function() {
+        return {
+          width: 'middle',
+          searchContent: {
+            realname: ''
+          },
+          tableTree: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                prop: 'name',
+                label: '菜单名称',
+                width: '400px'
+              },
+              {
+                prop: 'sort',
+                label: '排序'
+              }
+            ],
+            hasSelect: true,
+            tree: {
+              hasTree: true,
+              treeKey: 'name',
+              expand: false,
+              checkStrictly: true
+            },
+            // 操作
+            operation: {
+              label: '操作',
+              width: 250,
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                label: '子级',
+                id: 4,
+                fn: 'add-child-handle',
+                permission: ''
+              }, {
+                label: '详情',
+                id: 1,
+                fn: 'detail-handle',
+                permission: ''
+              }, {
+                label: '编辑',
+                id: 2,
+                fn: 'edit-handle',
+                permission: ''
+              }, {
+                label: '删除',
+                id: 3,
+                fn: 'delete-handle',
+                permission: ''
+              }]
+            },
+            pagination: {
+              total: 2
+            }
+          },
+          formData: {}
+        }
+      },
+      created: function() {
+        this.getTableTreeData()
+      },
+      methods: {
+        // 获取tabletree数据
+        getTableTreeData: function(data) {
+          var self = this
+          var data = $.extend(true, data, this.pagination)
+          console.log(data)
+          this.tableTree.loading = true
+          api({
+            url: '/sys/menu/list',
+            type: 'get',
+            successFuc: function (res) {
+              var expand = self.tableTree.tree && $.type(self.tableTree.tree.expand) === 'boolean' ? self.tableTree.tree.expand : false
+              self.tableTree.data = treeDataTranslate(res.data, expand)
+              self.tableTree.pagination.total = res.count
+              self.tableTree.loading = false
+            }
+          })
+        },
+        searchHandle: function() {
+          this.getTableTreeData(this.searchContent)
+        },
+        // 新增
+        addHandle: function() {
+          this.title1 = CONFIG.ADD
+          this.open('menuDialog')
+        },
+        // 详情
+        detailHandle: function(index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.DETAIL
+          this.open('menuDialog')
+          console.log('详情', index, row)
+        },
+        // 添加子级
+        addChildHandle: function(index, row) {
+          var data = clonedeep(row)
+          var childData = {
+            parentId: data.id,
+            parentName: data.name
+          }
+          this.formData = childData
+          this.title1 = '添加子级菜单'
+          this.open('menuDialog')
+          console.log('添加子级菜单', index, row)
+        },
+        // 编辑
+        editHandle: function(index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.EDIT
+          this.open('menuDialog')
+          console.log('编辑', index, row)
+        },
+        // 删除
+        deleteHandle: function(index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () {})
+        }
+      }
+    })
+  </script>
+</body>
+</html>

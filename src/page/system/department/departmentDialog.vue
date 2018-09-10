@@ -195,7 +195,7 @@ export default {
     // Dialog 关闭的回调
     closeDialogHandle () {
       if (this.title === this.GLOBAL.EDIT || this.title === this.GLOBAL.ADD) {
-        this.clearForm('departmentForm')
+        this.clearForm()
       }
     },
     // 确定

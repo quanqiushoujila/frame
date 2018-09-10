@@ -1,0 +1,328 @@
+ <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title>机构管理</title>
+</head>
+<body>
+  <div id="app" class="container">
+    <div class="user-manage">
+      <div class="header-layout">
+        <el-form :inline="true">
+          <el-form-item>
+            <el-input v-model="searchContent.name" placeholder="请输入机构名称"></el-input>
+          </el-form-item>
+          <el-form-item prop="type">
+            <el-select
+              filterable
+              clearable
+              v-model="searchContent.type"
+              placeholder="机构类别"
+              class="input-width">
+              <el-option
+                v-for="item in typeOptions"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="areaId">
+            <el-select
+              filterable
+              clearable
+              v-model="searchContent.areaId"
+              class="input-width"
+              placeholder="所属行政区划">
+              <el-option
+                v-for="item in areaIdOptions"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item prop="comLevel">
+            <el-select
+              filterable
+              clearable
+              v-model="searchContent.comLevel"
+              class="input-width"
+              placeholder="区划级别">
+              <el-option
+                v-for="item in comLevelOptions"
+                :key="item.id"
+                :label="item.label"
+                :value="item.id">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="body-layout">
+        <k-table
+          @selection-change-handle="selectionChangeHandle"
+          @size-change-handle="sizeChangeHandle"
+          @current-change-handle="currentChangeHandle"
+          @detail-handle="detailHandle"
+          @edit-handle="editHandle"
+          @delete-handle="deleteHandle"
+          @repeat-spassword-handle="repeatPasswordHandle"
+          :table="table"/>
+      </div>
+      <!-- 弹窗组件 -->
+      <k-dialog
+        ref="departmentDialog"
+        :title="title1"
+        :width="width"
+        :is-btn-group="isBtnGroup"
+        @close-dialog-handle="closeDialogHandle"
+        @open-dialog-handle="openDialogHandle"
+        @cancel-handle="cancelHandle"
+        @confirm-handle="confirmHandle"
+        >
+        <template v-if="title1 === '详情'">
+          <k-detail
+            label-width="110px"
+            :props="props"
+            :data="formData"
+            ref="departmentDetail"
+          />
+        </template>
+        <template v-else>
+          <k-form
+            @submit-handle="submitHandle"
+            ref="departmentForm"
+            :form="form"
+            :form-props="props"
+            :rules="rules"
+            :data="formData"
+            label-width="110px"
+          />
+        </template>
+      </k-dialog>
+    </div>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/page/system/department/departmentDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/department.js"></script>
+  <script src="../../../mock/system/compartment.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, departmentDialog],
+      data: function() {
+        return {
+          width: 'middle',
+          dialogVisible: false,
+          isBtnGroup: false,
+          searchContent: {
+            name: '',
+            type: '',
+            areaId: '',
+            comLevel: ''
+          },
+          table: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                label: '名称',
+                prop: 'name'
+              },
+              {
+                label: '机构类别',
+                prop: 'type'
+              },
+              {
+                label: '机构编码',
+                prop: 'code'
+              }
+            ],
+            hasSelect: true,
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 150,
+              type: 'text',
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                type: '',
+                label: '详情',
+                id: 1,
+                fn: 'detail-handle',
+                permission: ''
+              }, {
+                type: 'warning',
+                label: '编辑',
+                id: 2,
+                fn: 'edit-handle',
+                permission: ''
+              }, {
+                type: 'danger',
+                label: '删除',
+                id: 3,
+                fn: 'delete-handle',
+                permission: ''
+              }]
+            },
+            pagination: {
+              hasPagination: true,
+              total: 144
+            }
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          formData: {},
+          // 机构类别
+          typeOptions: [],
+          // 所属行政区划
+          areaIdOptions: [],
+          // 区划级别
+          comLevelOptions: []
+        }
+      },
+      created: function() {
+        this.getTableTreeData()
+        this.getType()
+        this.getAreaName()
+        this.getComLevel()
+      },
+      methods: {
+        searchHandle: function() {
+          this.getTableTreeData(this.searchContent)
+        },
+        // 添加操作
+        addHandle: function() {
+          this.formData = resetObject(this.formData)
+          this.title1 = CONFIG.ADD
+          this.open('departmentDialog')
+
+        },
+        // 获取table数据
+        getTableTreeData: function(data) {
+          var self = this;
+          data = $.extend(true, this.pagination, data)
+          console.log(data)
+          this.table.loading = true
+          api({
+            url: '/sys/department/list',
+            type: 'get',
+            successFuc: function (res) {
+              self.table.data = res.data
+              self.table.pagination.total = res.count
+              self.table.loading = false
+            }
+          })
+        },
+        // 机构类别
+        getType: function(data) {
+          var self = this;
+          api({
+            url: '/sys/department/list',
+            type: 'get',
+            successFuc: function (res) {
+              if (res.code === 0) {
+                self.typeOptions = res.data
+              }
+            }
+          })
+        },
+        // 区划级别
+        getComLevel: function(data) {
+          var self = this;
+          api({
+            url: '/sys/compartment/comLevel',
+            type: 'get',
+            successFuc: function (res) {
+              if (res.code === 0) {
+                self.comLevelOptions = res.data
+              }
+            }
+          })
+        },
+        // 所属行政区划
+        getAreaName: function(data) {
+          var self = this;
+          api({
+            url: '/sys/compartment/areaName',
+            type: 'get',
+            successFuc: function (res) {
+              if (res.code === 0) {
+                self.areaIdOptions = res.data
+              }
+            }
+          })
+        },
+        // 详情
+        detailHandle: function(index, row) {
+          this.isBtnGroup = false;
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.DETAIL
+          this.open('departmentDialog')
+        },
+        // 编辑
+        editHandle: function(index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.EDIT
+          this.open('departmentDialog')
+        },
+        // 删除
+        deleteHandle: function(index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () {})
+        },
+        // 重置密码
+        repeatPasswordHandle: function(index, row) {
+          this.confirmHandle('确定重置密码吗？').then(() => {
+            console.log('重置密码', index, row)
+          })
+        },
+        // table checkbox选择
+        selectionChangeHandle: function(val) {
+          var ids = val.map((item) => {
+            return item.id
+          })
+          this.queryData = ids
+        },
+        currentChangeHandle: function(val) {
+          this.pagination.page = val
+          // this.getTableData(this.pagination)
+        },
+        sizeChangeHandle: function(val) {
+          this.pagination.limit = val
+          // this.getTableData(this.pagination)
+        },
+        // 初始化数据
+        resetFormData: function() {
+          this.formData = resetObject(this.formData)
+        },
+      }
+    })
+  </script>
+</body>
+</html>

@@ -55,7 +55,9 @@ const paddingHeight = 15
 export default {
   name: 'mainContent',
   data () {
-    return {}
+    return {
+      maxLengthTabMenu: 5
+    }
   },
   computed: {
     documentClientHeight: {
@@ -82,6 +84,17 @@ export default {
     },
     sidebarFold: {
       get () { return this.$store.state.common.sidebarFold }
+    }
+  },
+  watch: {
+    mainTabs: {
+      handler (newVal) {
+        if (newVal.length > this.maxLengthTabMenu) {
+          newVal.shift()
+          this.mainTabs = newVal
+        }
+      },
+      deep: true
     }
   },
   methods: {

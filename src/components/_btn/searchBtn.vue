@@ -1,7 +1,7 @@
 <!-- 搜索按钮 -->
 <template>
   <div class="search-btn">
-    <el-button @click="click" icon="el-icon-search">搜索</el-button>
+    <el-button @click="click" icon="el-icon-search" v-dbClick>搜索</el-button>
     <el-button
       v-if="isMore"
       class="is-more"

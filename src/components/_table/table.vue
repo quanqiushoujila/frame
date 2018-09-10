@@ -9,6 +9,7 @@
       @select-all="handleSelectAll"
       @selection-change="handleSelectionChange"
       @cell-click="cellClickHandle"
+      :span-method="spanMethodHandle"
       border
       :row-style="tableRowStyle"
       :row-class-name="tableRowClassName"
@@ -33,36 +34,27 @@
             :prop="item.prop"
             :label="item.label"
             :minWidth="item.minWidth ? item.minWidth : ''"
-            :width="item.width ? item.width : ''"
-          />
+            :width="item.width ? item.width : ''"/>
         </template>
-        <template v-else-if="item.other">
+        <template v-else-if="item.template">
           <el-table-column
             show-overflow-tooltip
-            :prop="item.prop"
+            :prop="item.prop || ''"
             :key="item.prop"
             :label="item.label"
             v-if="item.show !== false ? true : false"
             :min-width="item.minWidth ? item.minWidth : ''"
-            :width="item.width ? item.width : ''"
-          >
-            <!-- <slot :name="item.prop + 'Table'"></slot> -->
+            :width="item.width ? item.width : ''">
             <template slot-scope="scope">
-              <i class="el-icon-time"></i>
-              <span style="margin-left: 10px">{{ scope.row.email }}</span>
+              <slot :name="item.prop" :data="scope"></slot>
             </template>
           </el-table-column>
         </template>
         <template v-else>
-          <el-table-column
-            show-overflow-tooltip
-            :prop="item.prop"
+          <table-column
+            @tableCellHandle="tableCellHandle"
             :key="item.prop"
-            :label="item.label"
-            v-if="item.show !== false ? true : false"
-            :min-width="item.minWidth ? item.minWidth : ''"
-            :width="item.width ? item.width : ''"
-          />
+            :data="item"/>
         </template>
       </template>
       <el-table-column
@@ -74,7 +66,7 @@
         <template slot-scope="scope">
           <el-button
             v-for="item in table.operation.data"
-            v-if="isPermission(item.permission) && isShow(item.show)"
+            v-if="isBtnGroup(item, scope.row)"
             :key="item.label"
             size="small"
             :type="table.operation.type ? table.operation.type : 'text'"
@@ -103,10 +95,12 @@
 // import isArray from 'lodash/isArray'
 import isBoolean from 'lodash/isBoolean'
 import tableTreeColumn from './tableTree'
+import tableColumnTemplate from './tableColumnTemplate.vue'
+import tableColumn from './tableColumn.vue'
 
 export default {
   name: 'kTable',
-  components: {tableTreeColumn},
+  components: {tableTreeColumn, tableColumn, tableColumnTemplate},
   props: {
     table: {
       type: Object,
@@ -195,6 +189,17 @@ export default {
     }
   },
   methods: {
+    // 按钮是否显示
+    isBtnGroup (data, row) {
+      let result = this.isPermission(data.permission)
+      if (result) {
+        result = this.isShow(data.show)
+      }
+      if (result) {
+        result = this.table.btnGroupFn ? this.table.btnGroupFn(data, row) : true
+      }
+      return result
+    },
     // 按钮是否显示
     isShow (status = true) {
       if (isBoolean(status) && status) {
@@ -350,6 +355,17 @@ export default {
           this.getDataChildren(children, data)
         }
       }
+    },
+    // 合并单元格
+    spanMethodHandle ({ row, column, rowIndex, columnIndex }) {
+      this.$emit('spanMethodHandle', row, column, rowIndex, columnIndex)
+    },
+    // table单元格点击
+    tableCellHandle (prop, row) {
+      this.$emit(`${prop}CellHandle`, row)
+    },
+    renderHeader (h, { column, $index }) {
+      return h('span', column.label)
     }
   }
 }

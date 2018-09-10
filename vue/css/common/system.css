@@ -1,0 +1,15 @@
+/*菜单图标*/
+
+.max-height .el-button {
+  padding: 8px !important;
+  margin: 8px 0 0 8px !important;
+}
+
+.ellipsis {
+  display: block;
+  width: 100%;
+  height: 40px;
+}
+
+
+/*菜单图标结束*/

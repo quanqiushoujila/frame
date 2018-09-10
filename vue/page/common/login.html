@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/common/login.css">
+  <title>登录页</title>
+</head>
+<body>
+  <div id="app">
+    <div class="login-container main-container">
+      <div class="main-wrapper">
+        <h1 class="main-logo login-logo">
+          <img src="../../img/logo-login.png" alt="logo">
+          <span>数据指挥控制中心</span>
+        </h1>
+        <div class="main-slogan">
+          <h2>
+            <span>为数据管理赋权</span><span>数据应用赋能</span><span>数据资产赋值</span>
+          </h2>
+          <p>规范编辑 / 智能管理 / 关联应用 / 共享开放</p>
+        </div>
+        <div class="login-box">
+          <p class="error" v-text="errorMsg"></p>
+          <el-form ref="form"
+            :model="dataForm"
+            :rules="dataRule"
+            status-icon
+            @keyup.enter.native="dataFormSubmit()"
+            label-width="0">
+            <el-form-item prop="userName">
+              <el-input v-model="dataForm.userName" placeholder="请输入用户名"></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input v-model="dataForm.password" placeholder="请输入密码"></el-input>
+            </el-form-item>
+            <el-form-item prop="captcha">
+              <el-row :gutter="20">
+                <el-col :span="14">
+                  <el-input v-model="dataForm.captcha" placeholder="请输入验证码"></el-input>
+                </el-col>
+                <el-col :span="6">
+                  <img :src="captchaPath" alt="aptcha">
+                </el-col>
+              </el-row>
+            </el-form-item>
+            <el-button type="primary" class="btn-block" :disabled="btnDisabled"  @click="dataFormSubmit()"><span v-text="'登录'"></span></el-button>
+          </el-form>
+        </div>
+        <footer class="copyright" v-text="''"></footer>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/lib/jquery.min.js"></script>
+  <script src="../../js/lib/vue.min.js"></script>
+  <script src="../../js/lib/element-ui/index.js"></script>
+  <script src="../../js/util/index.js"></script>
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: function() {
+        return {
+          errorMsg: '',
+          btnDisabled: false,
+          dataForm: {
+            userName: '',
+            password: '',
+            captcha: ''
+          },
+          dataRule: {
+            userName: [
+              { required: true, message: '帐号不能为空', trigger: 'blur' }
+            ],
+            password: [
+              { required: true, message: '密码不能为空', trigger: 'blur' }
+            ],
+            captcha: [
+              { required: true, message: '验证码不能为空', trigger: 'blur' }
+            ]
+          },
+          captchaPath: ''
+        }
+      },
+      methods: {
+        // 提交表单
+        dataFormSubmit: function() {
+          this.errorMsg = ''
+          this.$refs.form.validate(function(valid) {
+            if (valid) {
+              this.btnDisabled = true
+              console.log('验证通过')
+              api({
+                url: '',
+                type: 'post',
+                data: this.dataForm,
+                successFuc: function(data) {
+                  this.btnDisabled = false
+                  setCookie('token', data.token)
+                },
+                failFuc: function(res) {
+                  this.errorMsg = data.msg
+                  this.dataForm.password = ''
+                  this.dataForm.captcha = ''
+                  this.btnDisabled = false
+                }
+              })
+            } else {
+              console.log('验证不通过')
+              return false
+            }
+          })
+        }
+      }
+    })
+  </script>
+</body>
+</html>

@@ -18,7 +18,7 @@ const main = [
       name: '我的资产',
       icon: 'icon-shezhi1',
       children: [
-        {id: 22, name: '机房清单', icon: 'icon-daiban', path: '/my1/menu', filename: 'menu'}
+        {id: 22, name: '机房清单', icon: 'icon-daiban', path: '/my1/menu', filename: 'menu1'}
       ]
     }
   ],
@@ -38,7 +38,7 @@ const main = [
       name: '已发布的事项',
       icon: 'icon-shezhi1',
       children: [
-        {id: 42, name: '已发布事项', icon: 'icon-daiban', path: '/my3/menu', filename: 'menu'}
+        {id: 42, name: '已发布事项', icon: 'icon-daiban', path: '/my3/menu', filename: 'menu2'}
       ]
     }
   ],
@@ -48,7 +48,7 @@ const main = [
       name: '数源需求',
       icon: 'icon-shezhi1',
       children: [
-        {id: 52, name: '需求梳理', icon: 'icon-daiban', path: '/my4/menu', filename: 'menu'}
+        {id: 52, name: '需求梳理', icon: 'icon-daiban', path: '/my4/menu', filename: 'menu3'}
       ]
     }
   ],
@@ -58,7 +58,7 @@ const main = [
       name: '标签管理',
       icon: 'icon-shezhi1',
       children: [
-        {id: 62, name: '标签设计', icon: 'icon-daiban', path: '/my5/menu', filename: 'menu'}
+        {id: 62, name: '标签设计', icon: 'icon-daiban', path: '/my5/menu', filename: 'menu4'}
       ]
     }
   ],
@@ -68,7 +68,7 @@ const main = [
       name: '标签管理',
       icon: 'icon-shezhi1',
       children: [
-        {id: 72, name: '标签设计', icon: 'icon-daiban', path: '/my6/menu', filename: 'menu'}
+        {id: 72, name: '标签设计', icon: 'icon-daiban', path: '/my6/menu', filename: 'menu5'}
       ]
     }
   ],
@@ -78,7 +78,7 @@ const main = [
       name: '标签管理1',
       icon: 'icon-shezhi1',
       children: [
-        {id: 82, name: '标签设计1', icon: 'icon-daiban', path: '/my7/menu', filename: 'menu'}
+        {id: 82, name: '标签设计1', icon: 'icon-daiban', path: '/my7/menu', filename: 'menu6'}
       ]
     }
   ],
@@ -88,7 +88,7 @@ const main = [
       name: '标签管理2',
       icon: 'icon-shezhi1',
       children: [
-        {id: 92, name: '标签设计2', icon: 'icon-daiban', path: '/my8/menu', filename: 'menu'}
+        {id: 92, name: '标签设计2', icon: 'icon-daiban', path: '/my8/menu', filename: 'menu7'}
       ]
     }
   ],
@@ -98,7 +98,7 @@ const main = [
       name: '标签管理3',
       icon: 'icon-shezhi1',
       children: [
-        {id: 102, name: '标签设计3', icon: 'icon-daiban', path: '/my9/menu', filename: 'menu'}
+        {id: 102, name: '标签设计3', icon: 'icon-daiban', path: '/my9/menu', filename: 'menu8'}
       ]
     }
   ],

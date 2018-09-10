@@ -24,7 +24,6 @@
       :formProps="props"
       :rules="rules"
       :data="formData"
-      :otherData="otherData"
     >
     <div slot="iconForm">
       <el-popover
@@ -41,7 +40,7 @@
             <i class="iconfont" :class="item"></i>
         </el-button>
         </div>
-        <el-input v-model="otherData.icon" readonly slot="reference"></el-input>
+        <el-input v-model="form.icon" readonly slot="reference"></el-input>
       </el-popover>
     </div>
     </k-form>
@@ -54,7 +53,6 @@ import kDialog from 'components/_dialog/dialog'
 import kDetail from 'components/_form/detail'
 import kForm from 'components/_form/form'
 import {sysMenuType, sysMenuModuleType, sysMenuParentId} from 'js/api/system/menu'
-// import {resetObject} from 'js/util'
 import icons from 'js/util/icon'
 import formMixin from 'js/mixin/form'
 const ADDCHILD = '添加子级菜单'
@@ -91,9 +89,6 @@ export default {
       formRef: 'menuForm',
       dialogRef: 'menuDia',
       iconVisible: false,
-      otherData: {
-        icon: ''
-      },
       form: {
         id: '',
         parentName: '',
@@ -218,13 +213,9 @@ export default {
     openDialogHandle () {
       if (this.title === this.GLOBAL.ADDCHILD) {
         this.$set(this.props[0], 'reference', false)
-        this.$set(this.otherData, 'icon', '')
       } else {
         if (this.title === this.GLOBAL.EDIT) {
-          this.$set(this.otherData, 'icon', this.formData.icon)
           this.validate()
-        } else if (this.title === this.GLOBAL.ADD) {
-          this.$set(this.otherData, 'icon', '')
         }
       }
       if (this.title === this.GLOBAL.ADD || this.title === ADDCHILD) {
@@ -245,7 +236,7 @@ export default {
       this.$refs.menuForm.submitHandle()
     },
     iconChangeHandle (icon) {
-      this.$set(this.otherData, 'icon', icon)
+      this.$set(this.form, 'icon', icon)
       this.iconVisible = false
     }
   }

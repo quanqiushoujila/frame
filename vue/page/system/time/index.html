@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title></title>
+</head>
+
+<body>
+  <div id="app" class="container">
+    <div class="header-layout">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input v-model="searchContent.beanName" placeholder="bean名称"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="danger" @click="deleteQueryHandle" icon="el-icon-delete"><span v-text="'批量删除'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="stopHandle" type="info" icon="el-icon-bell">
+            <span v-text="'暂停'"></span>
+          </el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="replyHandle" type="warning" icon="el-icon-news">
+            <span v-text="'回复'"></span>
+          </el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="implementHandle" type="success" icon="el-icon-phone">
+            <span v-text="'立即执行'"></span>
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="body-layout">
+      <k-table @selection-change-handle="selectionChangeHandle" @size-change-handle="sizeChangeHandle" @current-change-handle="currentChangeHandle"
+        @detail-handle="detailHandle" @edit-handle="editHandle" @delete-handle="deleteHandle" :table="table" />
+    </div>
+    <!-- 新增修改详情 -->
+    <k-dialog
+      ref="timeDialog"
+      :title="title1"
+      width="middle"
+      :is-btn-group="title === '详情' ? false : true"
+      @close-dialog-handle="closeDialogHandle"
+      @open-dialog-handle="openDialogHandle"
+      @cancel-handle="cancelHandle"
+      @confirm-handle="confirmHandle"
+    >
+      <template v-if="title === '详情'">
+        <k-detail :props="props" :data="formData" />
+      </template>
+      <template v-else>
+        <k-form @submit-handle="submitHandle" ref="timeForm" :form="form" :form-props="props" :rules="rules" :data="formData" />
+      </template>
+    </k-dialog>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/page/system/time/timeDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/time.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, timeDialog],
+      data: function () {
+        return {
+          searchContent: {
+            beanName: ''
+          },
+          table: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                prop: 'beanName',
+                label: 'bean名称'
+              },
+              {
+                prop: 'methodName',
+                label: '方法名称'
+              },
+              {
+                prop: 'params',
+                label: '参数'
+              },
+              {
+                prop: 'cronExpression',
+                label: 'cron表达式'
+              },
+              {
+                prop: 'statusForShow',
+                label: '状态'
+              }
+            ],
+            hasSelect: true,
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 200,
+              type: 'text',
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                type: 'warning',
+                label: '详情',
+                id: 1,
+                fn: 'detail-handle',
+                permission: 'sys:user:info'
+              }, {
+                type: 'warning',
+                label: '编辑',
+                id: 2,
+                fn: 'edit-handle',
+                permission: 'sys:user:update'
+              }, {
+                type: 'danger',
+                label: '删除',
+                id: 3,
+                fn: 'delete-handle',
+                permission: 'sys:user:delete'
+              }]
+            },
+            pagination: {
+              hasPagination: true,
+              total: 144
+            }
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          formData: {},
+          title: ''
+        }
+      },
+      created: function () {
+        this.getTableData()
+      },
+      methods: {
+        searchHandle: function () {
+          this.getTableData(this.searchContent)
+        },
+        // 添加操作
+        addHandle: function () {
+          this.resetFormData()
+          this.title = CONFIG.ADD
+          this.open('timeDialog')
+        },
+        // 获取table数据
+        getTableData: function (data) {
+          let self = this;
+          var data = $.extend(true, data, this.pagination)
+          console.log(data)
+          this.table.loading = true
+          api({
+            url: '/sys/time/list',
+            type: 'get',
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                self.table.data = res.data
+                self.table.pagination.total = res.count
+                self.table.loading = false
+              }
+            }
+          })
+        },
+        // 详情
+        detailHandle: function (index, row) {
+          this.formData = clonedeep(row)
+          this.title = CONFIG.DETAIL
+          this.open('timeDialog')
+          console.log('详情', index, row)
+        },
+        // 编辑
+        editHandle: function (index, row) {
+          this.formData = clonedeep(row)
+          this.title = CONFIG.EDIT
+          this.open('timeDialog')
+          console.log('编辑', index, row)
+        },
+        // 删除
+        deleteHandle: function (index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () { })
+        },
+        // table checkbox选择
+        selectionChangeHandle: function (ids, val) {
+          console.log(ids, val)
+          this.queryData = ids
+        },
+        currentChangeHandle: function (val) {
+          this.pagination.page = val
+          this.getTableData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function (val) {
+          this.pagination.limit = val
+          this.getTableData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        },
+        // 初始化数据
+        resetFormData: function () {
+          this.formData = resetObject(this.formData)
+        },
+        // 立即执行
+        implementHandle: function () {
+          var self = this
+          if (this.queryData.length > 0) {
+            this.$confirm('确定要立即执行吗').then(function () {
+              console.log('立即执行成功', self.queryData)
+            }).catch(function () { })
+          } else {
+            this.warningHandle('未选择不能立即执行,请选择后操作')
+          }
+        },
+        // 回复
+        replyHandle: function () {
+          var self = this
+          if (this.queryData.length > 0) {
+            this.$confirm('确定要回复吗').then(function () {
+              console.log('回复成功', self.queryData)
+            }).catch(function () { })
+          } else {
+            this.warningHandle('未选择不能回复,请选择后操作')
+          }
+        },
+        // 暂停
+        stopHandle: function () {
+          var self = this
+          if (this.queryData.length > 0) {
+            this.$confirm('确定要暂停吗').then(function () {
+              console.log('暂停成功', self.queryData)
+            }).catch(function () { })
+          } else {
+            this.warningHandle('未选择不能暂停,请选择后操作')
+          }
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

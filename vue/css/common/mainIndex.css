@@ -1,0 +1,39 @@
+.main-index {
+  background: url("../../img/bg-login.jpg") top no-repeat;
+}
+.main-index .main-wrapper {
+  width: auto;
+  height: auto;
+}
+.main-index .main-slogan {
+  padding-top: 120px;
+}
+.main-index .main-index-content {
+  width: 1050px;
+  margin: 40px auto 10px;
+}
+.main-index .main-index-content ul li:first-child {
+  padding-left: 0;
+}
+.main-index .main-index-content ul li {
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+.main-index .main-index-content ul li a {
+  color: #fff;
+  font-size: 16px;
+  display: block;
+  height: 100%;
+  padding: 2px 10px 7px;
+  border: 1px solid transparent;
+  text-align: center;
+}
+.main-index .main-index-content ul li a:hover {
+  border: 1px solid #43dcea;
+  border-radius: 5px;
+  color: #43dcea;
+}
+.main-index .main-index-content ul li a i {
+  font-size: 35px;
+  display: block;
+}

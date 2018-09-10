@@ -32,6 +32,7 @@
   </div>
 </template>
 <script>
+import merge from 'lodash/merge'
 import clonedeep from 'lodash/clonedeep'
 import headerLayout from 'components/_layout/headerLayout'
 import bodyLayout from 'components/_layout/bodyLayout'
@@ -122,10 +123,15 @@ export default {
     open () {
       this.$refs.dictionaryDialog.open()
     },
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      this.getTableTreeData()
+    },
     // 获取tabletree数据
     getTableTreeData (data = {}) {
+      const result = merge(this.pagination, this.searchContent, data)
       this.tableTree.loading = true
-      sysDictionaryList(data).then((res) => {
+      sysDictionaryList(result).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
           const expand = this.tableTree.tree && isBoolean(this.tableTree.tree.expand) ? this.tableTree.tree.expand : false
           this.tableTree.data = treeDataTranslate(res.data, expand)
@@ -133,10 +139,6 @@ export default {
           this.tableTree.loading = false
         }
       })
-    },
-    searchHandle () {
-      console.log('搜索', this.searchContent)
-      this.getTableTreeData(this.searchContent)
     },
     // 添加子级
     dictionaryChildrenHandle (index, row) {

@@ -112,13 +112,13 @@ export default {
     // 搜索
     searchHandle () {
       console.log('搜索', this.searchContent)
-      const result = merge(this.pagination, this.searchContent)
-      this.getTableData(result)
+      this.getTableData()
     },
     // 获取table数据
     getTableData (data = {}) {
+      const result = merge(this.pagination, this.searchContent, data)
       this.table.loading = true
-      sysLogList(data).then((res) => {
+      sysLogList(result).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
           console.log(res)
           this.table.data = res.data

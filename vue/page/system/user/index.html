@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title></title>
+</head>
+
+<body>
+  <div id="app" class="container">
+    <div class="header-layout">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input v-model="searchContent.realname" placeholder="请输入登录名"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search" v-db-click><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="danger" @click="deleteQueryHandle" icon="el-icon-delete"><span v-text="'批量删除'"></span></el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="body-layout">
+      <!-- 表格 -->
+      <k-table
+        @selection-change-handle="selectionChangeHandle"
+        @size-change-handle="sizeChangeHandle"
+        @current-change-handle="currentChangeHandle"
+        @detail-handle="detailHandle"
+        @edit-handle="editHandle"
+        @delete-handle="deleteHandle"
+        @repeat-password-handle="repeatPasswordHandle"
+        :table="table">
+      </k-table>
+      <!-- 表格结束 -->
+    </div>
+    <!-- 新增修改详情弹窗 -->
+    <k-dialog
+      ref="userDialog"
+      :title="title1"
+      width="'middle'"
+      :is-btn-group="isBtnGroup"
+      @close-dialog-handle="closeDialogHandle"
+      @open-dialog-handle="openDialogHandle"
+      @cancel-handle="cancelHandle"
+      @confirm-handle="confirmHandle">
+      <template v-if="title1 === '详情'">
+        <k-detail :props="props" :data="formData" ref="userDetail"></k-detail>
+      </template>
+      <template v-else>
+        <k-form @deptName-select-change-handle="deptNameSelectChangeHandle" @submit-handle="submitHandle" ref="userForm" :form="form"
+          :form-props="props" :rules="rules" :data="formData"></k-form>
+      </template>
+    </k-dialog>
+    <!-- 新增修改详情弹窗结束 -->
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../js/page/system/user/userDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/user.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    // Vue.directive('dbClick', function () {console.log(1112)})
+
+
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, userDialog],
+      data: function () {
+        return {
+          fullscreen: true,
+          searchContent: {
+            realname: ''
+          },
+          table: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                prop: '',
+                label: '名称',
+                children: [
+                  {
+                    prop: 'realname',
+                    label: '登录名',
+                    click: true
+                  },
+                  {
+                    prop: 'username',
+                    label: '姓名'
+                  }
+                ]
+              },
+              {
+                prop: 'email',
+                label: '邮箱'
+              }
+            ],
+            hasSelect: true,
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 200,
+              type: 'text',
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [
+                {
+                  type: '',
+                  label: '详情',
+                  id: 1,
+                  fn: 'detail-handle',
+                  permission: 'sys:user:info'
+                },
+                {
+                  type: 'warning',
+                  label: '编辑',
+                  id: 2,
+                  fn: 'edit-handle',
+                  permission: 'sys:user:update'
+                },
+                {
+                  type: 'danger',
+                  label: '删除',
+                  id: 3,
+                  fn: 'delete-handle',
+                  permission: 'sys:user:delete'
+                },
+                {
+                  type: '',
+                  label: '重置密码',
+                  id: 4,
+                  fn: 'repeat-password-handle'
+                }
+              ]
+            },
+            pagination: {
+              hasPagination: true,
+              total: 144
+            }
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          formData: {}
+        }
+      },
+      created: function () {
+        this.getTableData()
+      },
+      methods: {
+        // 获取table数据
+        getTableData: function (data) {
+          var self = this
+          data = data || {}
+          api({
+            url: '/sys/user/list',
+            type: 'get',
+            successFuc: function (res) {
+              self.table.data = res.data
+              self.table.pagination.total = res.count
+              self.table.loading = false
+            }
+          })
+        },
+        searchHandle: function () {
+          console.log('搜索', this.searchContent)
+          this.getTableData(this.searchContent)
+        },
+        // 添加操作
+        addHandle: function () {
+          this.formData = resetObject(this.formData)
+          this.title1 = CONFIG.ADD
+          this.open('userDialog')
+        },
+        // 删除
+        deleteHandle: function (index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () { })
+        },
+        // 详情
+        detailHandle: function (index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.DETAIL
+          this.open('userDialog')
+          console.log('详情', index, row)
+        },
+        // 编辑
+        editHandle: function (index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.EDIT
+          this.open('userDialog')
+          console.log(this.formData)
+          console.log('编辑', index, row)
+        },
+        // 重置密码
+        repeatPasswordHandle: function (index, row) {
+          this.$confirm('确定重置密码吗？').then(function () {
+            console.log('重置密码', index, row)
+          }).catch(function () { })
+        },
+        // table checkbox选择
+        selectionChangeHandle: function (ids, val) {
+          console.log('checkbox选择', ids)
+          this.queryData = ids
+        },
+        currentChangeHandle: function (val) {
+          this.pagination.page = val
+          this.getTableData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function (val) {
+          this.pagination.limit = val
+          this.getTableData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

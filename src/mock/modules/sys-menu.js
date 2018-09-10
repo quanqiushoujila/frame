@@ -18,7 +18,7 @@ var dataList = [
         'name': '菜单管理',
         'icon': 'icon-dianziqianzhang',
         'parentName': '系统管理',
-        'parentId': 2,
+        'parentId': 1,
         'type': 1,
         'sort': 2,
         'permission': '11',
@@ -81,6 +81,19 @@ var dataList = [
             'level': 3
           }
         ]
+      },
+      {
+        'id': 30,
+        'name': '菜单管理1',
+        'icon': 'icon-dianziqianzhang',
+        'parentName': '系统管理',
+        'parentId': 1,
+        'type': 1,
+        'sort': 2,
+        'permission': '11',
+        'level': 2,
+        'url': '/sys',
+        'moduleType': 1
       }
     ]
   },

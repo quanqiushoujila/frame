@@ -1,0 +1,35 @@
+.login-container {
+  background: url("../../img/bg-login.jpg") top no-repeat;
+}
+
+.login-container .main-wrapper .login-logo span {
+  padding: 10px 30px 18px;
+  margin-left: 30px;
+  font-weight: 400;
+  border-left: 1px solid #50678e;
+  color: #e4e4e4;
+}
+
+.login-container .main-wrapper .login-box {
+  width: 300px;
+  margin: 0 auto;
+  margin-top: 20px;
+  position: relative;
+}
+
+.login-container .main-wrapper .login-box .error {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  color: #f56c6c;
+  font-size: 16px;
+}
+
+.login-container .main-wrapper .copyright {
+  width: 100%;
+  text-align: center;
+  padding: 50px 0 20px;
+  color: #9aa8b7;
+  position: relative;
+  bottom: 20px;
+}

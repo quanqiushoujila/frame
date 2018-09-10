@@ -9,7 +9,9 @@
       @select-all="handleSelectAll"
       @selection-change="handleSelectionChange"
       @cell-click="cellClickHandle"
+      :span-method="spanMethodHandle"
       border
+      :row-style="tableRowStyle"
       :row-class-name="tableRowClassName"
       :stripe="table.stripe ? table.stripe : true"
       :size="table.size ? table.size : 'medium'"
@@ -23,9 +25,10 @@
       <template v-for="item in table.tr">
         <template v-if="isTreeTable(table.tree, item.prop)">
           <table-tree-column
-            treeKey="id"
-            :selectTreeData="selectTreeData"
-            @resultData="resultData"
+            :levelKey="levelKey"
+            :childKey="childKey"
+            :expanded="expanded"
+            :show="show"
             :data="table.data"
             :key="item.prop"
             :prop="item.prop"
@@ -34,8 +37,9 @@
             :width="item.width ? item.width : ''"
           />
         </template>
-        <template v-else>
+        <template v-else-if="item.template">
           <el-table-column
+            align="center"
             show-overflow-tooltip
             :prop="item.prop"
             :key="item.prop"
@@ -43,7 +47,40 @@
             v-if="item.show !== false ? true : false"
             :min-width="item.minWidth ? item.minWidth : ''"
             :width="item.width ? item.width : ''"
-          />
+          >
+            <template slot-scope="scope">
+              <slot :name="item.prop" :data="scope"></slot>
+            </template>
+          </el-table-column>
+        </template>
+        <template v-else>
+          <el-table-column
+            align="center"
+            show-overflow-tooltip
+            :prop="item.prop"
+            :key="item.prop"
+            :label="item.label"
+            v-if="item.show !== false ? true : false"
+            :min-width="item.minWidth ? item.minWidth : ''"
+            :width="item.width ? item.width : ''">
+            <template slot-scope="scope">
+              <template v-if="!item.click">{{scope.row[item.prop]}}</template>
+              <template v-else>
+                <span class="pointer underline" @click="tableClickHandle(item.prop, scope.row)">{{scope.row[item.prop]}}</span>
+              </template>
+            </template>
+            <el-table-column
+              align="center"
+              show-overflow-tooltip
+              :prop="item1.prop"
+              :key="item1.prop"
+              :label="item1.label"
+              v-if="item.children || item.children.length>0"
+              v-for="item1 in item.children"
+              :min-width="item1.minWidth ? item1.minWidth : ''"
+              :width="item1.width ? item1.width : ''">
+            </el-table-column>
+          </el-table-column>
         </template>
       </template>
       <el-table-column
@@ -55,7 +92,7 @@
         <template slot-scope="scope">
           <el-button
             v-for="item in table.operation.data"
-            v-if="hasPermission(item.permission)"
+            v-if="isPermission(item.permission) || isShow(item.show)"
             :key="item.label"
             size="small"
             :type="table.operation.type ? table.operation.type : 'text'"
@@ -105,13 +142,14 @@ export default {
           loading: false,
           // 选择框
           hasSelect: true,
-          // 折叠prop
           // 树
           tree: {
-            // 是否开启tabletree
+            // 是否开启tabletree 有选择框必加
             hasTree: false,
             treeKey: '',
-            expand: false,
+            // 折叠prop
+            expand: true,
+            // 是否跟父级相关联
             checkStrictly: false
           },
           // table 名称
@@ -151,12 +189,22 @@ export default {
           }
         }
       }
-    }
-  },
-  data () {
-    return {
-      // 仅在treetable有效 被选中的select
-      selectTreeData: []
+    },
+    levelKey: {
+      type: String,
+      default: 'level'
+    },
+    childKey: {
+      type: String,
+      default: 'children'
+    },
+    expanded: {
+      type: String,
+      default: '_expanded'
+    },
+    show: {
+      type: String,
+      default: '_show'
     }
   },
   computed: {
@@ -165,6 +213,14 @@ export default {
     }
   },
   methods: {
+    // 按钮是否显示
+    isShow (status = true) {
+      if (isBoolean(status) && status) {
+        return true
+      } else {
+        return false
+      }
+    },
     // 是否有选择框
     isSelect (select) {
       return isBoolean(select) ? (select ? 1 : 0) : 0
@@ -224,7 +280,7 @@ export default {
       }
     },
     // 按钮是否拥有权限
-    hasPermission (val) {
+    isPermission (val) {
       if (val && this.permissions && this.permissions.length) {
         return this.permissions.findIndex(item => item === val) > -1
       }
@@ -241,32 +297,11 @@ export default {
     },
     // 当选择项发生变化时会触发该事件
     handleSelectionChange (val) {
-      console.log('handleSelectionChange', val)
-      let ids = []
-      console.log()
-      if (this.table.tree && this.table.tree.hasTree && this.table.hasSelect) {
-        this.selectTreeData = val
-        let ids = []
-        let data = []
-        for (let i = 0, len = val.length; i < len; i++) {
-          if (data.length > 0) {
-            for (let j = 0, len = data.length; j < len; j++) {
-
-            }
-          } else {
-            data.push(val[i])
-          }
-        }
-        ids = data.map((item) => {
-          return item.id
-        })
-        this.$emit('selectionChangeHandle', ids, val)
-      } else {
-        ids = val.map((item) => {
-          return item.id
-        })
-        this.$emit('selectionChangeHandle', ids, val)
-      }
+      // console.log('handleSelectionChange', val)
+      let ids = val.map((item) => {
+        return item.id
+      })
+      this.$emit('selectionChangeHandle', ids, val)
     },
     // 当全选时发生变化时会触发该事件
     handleSelectAll (val) {
@@ -274,8 +309,27 @@ export default {
       this.$emit('selectAllHandle', val)
     },
     // 当用户手动勾选数据行的 Checkbox 时触发的事件
-    handleSelect (val) {
-      // console.log('handleSelect', val)
+    handleSelect (val, row) {
+      // console.log('handleSelect', val, row)
+      if (this.table.tree && isBoolean(this.table.tree.checkStrictly) && this.table.tree.checkStrictly && row.children && row.children.length > 0) {
+        let index = val.findIndex((item) => {
+          return item.id === row.id
+        })
+
+        let data = []
+        // -1 移除选中; 大于-1 选中
+        if (index === -1) {
+          this.getDataChildren(row.children, data)
+          data.forEach(row => {
+            this.$refs.kTable.toggleRowSelection(row, false)
+          })
+        } else {
+          this.getDataChildren(row.children, data)
+          data.forEach(row => {
+            this.$refs.kTable.toggleRowSelection(row, true)
+          })
+        }
+      }
       this.$emit('selectHandle', val)
     },
     // 当某个单元格被点击时会触发该事件
@@ -290,6 +344,14 @@ export default {
     tableRowClassName ({row, rowIndex}) {
       this.$emit('tableRowClassNameHandle', rowIndex, row)
     },
+    // 行的 style 的回调方法，
+    tableRowStyle ({row, rowIndex}) {
+      if (this.table.tree || (this.table.tree && this.table.tree.hasTree)) {
+        let show = !isBoolean(row[this.show]) ? 1 : (row[this.show] ? 1 : 0)
+        row[this.show] = !!show
+        return show ? '' : 'display:none;'
+      }
+    },
     // 每页条数改变时会触发
     handleSizeChange (val) {
       this.$emit('sizeChangeHandle', val)
@@ -298,29 +360,31 @@ export default {
     handleCurrentChange (val) {
       this.$emit('currentChangeHandle', val)
     },
-    // 接收treetabledata改变后的数据
-    resultData (data, selectData) {
-      if (this.table.tree && this.table.tree.hasTree && this.table.hasSelect) {
-        setTimeout(() => {
-          this.selectdTreeTable(data, selectData)
-        }, 10)
-      }
-      this.$emit('resultData', data)
-    },
-    // 选中tabletree
-    selectdTreeTable (data, selectData) {
-      for (let i = 0, len = data.length; i < len; i++) {
-        for (let j = 0, len1 = selectData.length; j < len1; j++) {
-          if (data[i].id === selectData[j].id) {
-            this.$refs.kTable.toggleRowSelection(selectData[j])
-            break
-          }
+    getDataChildren (row, data) {
+      for (let i = 0, len = row.length; i < len; i++) {
+        data.push(row[i])
+        const children = row[i].children
+        if (children && children.length > 0) {
+          this.getDataChildren(children, data)
         }
       }
     },
-    // tree数据处理
-    treeDataHandle (data) {
-
+    // 合并单元格
+    spanMethodHandle ({ row, column, rowIndex, columnIndex }) {
+      this.$emit('spanMethodHandle', row, column, rowIndex, columnIndex)
+    },
+    // table单元格点击
+    tableClickHandle (prop, row) {
+      this.$emit(`${prop}CellHandle`, row)
+    },
+    renderHeader (h, { column, $index }) {
+      return h('span', column.label)
+      // if (renderHeader && Object.proptotype.toString.call(renderHeader) === '[object Function]') {
+      //   return renderHeader()
+      // } else {
+      //   console.log(column.label)
+      //   return h('span', column.label)
+      // }
     }
   }
 }

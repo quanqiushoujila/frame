@@ -13,6 +13,8 @@ import * as sysDepartment from './modules/sys-department'
 import * as sysParame from './modules/sys-parame'
 import * as sysTime from './modules/sys-time'
 import * as resourcesCatalog from './modules/catalog/resourcesCatalog'
+import * as dicList from './modules/dicList'
+import * as test1 from './modules/test/test1'
 
 // tips
 // 1. 开启/关闭[业务模块]拦截, 通过调用fnCreate方法[isOpen参数]设置.
@@ -30,7 +32,9 @@ fnCreate(sysCompartment, false)
 fnCreate(sysDepartment, false)
 fnCreate(sysParame, false)
 fnCreate(sysTime, false)
+fnCreate(dicList, false)
 fnCreate(resourcesCatalog, false)
+fnCreate(test1, false)
 
 // const BASE_URL = 'http://123.com'
 

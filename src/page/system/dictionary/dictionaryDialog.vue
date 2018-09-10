@@ -84,16 +84,6 @@ export default {
           label: '字典值',
           prop: 'value',
           inputType: 'input'
-        },
-        {
-          label: '类型',
-          prop: 'type',
-          inputType: 'select'
-        },
-        {
-          label: '排序',
-          prop: 'sort',
-          inputType: 'input'
         }
       ],
       rules: {

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>test</title>
+  <link rel="stylesheet" href="../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../css/common.css">
+</head>
+<body>
+  <div id="app" class="container">
+    <!-- 搜索部分 -->
+    <div class="header-layout">
+      <el-form :inline="true" label-width="85px">
+        <el-form-item label="所属系统名称">
+          <el-select v-model="searchContent.select1" placeholder="" clearable>
+            <el-option :label="item.label" :value="item.id" v-for="item in select1"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="目录状态">
+          <el-select v-model="searchContent.select2" placeholder="" clearable>
+            <el-option :label="item.label" :value="item.id" v-for="item in select2"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="开放属性">
+          <el-select v-model="searchContent.select3" placeholder="" clearable>
+            <el-option :label="item.label" :value="item.id" v-for="item in select3"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="归集状态">
+          <el-select v-model="searchContent.select4" placeholder="" clearable>
+            <el-option :label="item.label" :value="item.id" v-for="item in select4"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-input v-model="searchContent.name" placeholder="请输入信息系统名称" clearable></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search" v-db-click><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="danger" @click="deleteQueryHandle" icon="el-icon-delete"><span v-text="'批量删除'"></span></el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <!-- 搜索部分结束 -->
+    <!-- table部分 -->
+    <div class="body-layout">
+      <el-table
+        stripe
+        :data="tableData"
+        border
+        @selection-change="selectionChangeHandle"
+        style="width: 100%">
+        <el-table-column
+          type="selection"
+          width="55">
+        </el-table-column>
+        <el-table-column
+          prop="name"
+          label="信息资源名称">
+        </el-table-column>
+        <el-table-column
+          prop="fromForShow"
+          label="资源提供方">
+        </el-table-column>
+        <el-table-column
+          prop="typeForShow"
+          label="信息资源格式">
+        </el-table-column>
+        <el-table-column
+          prop="sortForShow"
+          label="重点领域分类">
+        </el-table-column>
+        <el-table-column
+          prop="statusForShow"
+          label="目录状态">
+        </el-table-column>
+        <el-table-column
+          fixed="right"
+          label="操作"
+          width="250">
+          <template slot-scope="scope">
+            <el-button @click="detailHandle(scope.row, scope.$index)" type="text" size="small">查看</el-button>
+            <el-button @click="editHandle(scope.row, scope.$index)" type="text" size="small">编辑</el-button>
+            <el-button @click="logOffHandle(scope.row, scope.$index)" type="text" size="small">注销</el-button>
+            <el-button @click="deleteHandle(scope.row, scope.$index)" type="text" size="small">删除</el-button>
+            <el-button @click="setHandle(scope.row, scope.$index)" type="text" size="small">生成归集</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination">
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          :page-sizes="[10, 20, 30, 40]"
+          :page-size="10"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="40">
+        </el-pagination>
+      </div>
+    </div>
+    <!-- table部分结束 -->
+    <!-- 一级弹窗 -->
+    <el-dialog
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :title="title1"
+      @close="dialogClose1"
+      @open="dialogOpen1"
+      :visible.sync="dialogVisible1"
+      :fullscreen="true">
+      <div class="">
+        <template v-if="title1 === '详情'">
+            <el-form ref="detailForm1" label-width="100px" class="detail-form" label-position="top">
+              <el-row :gutter="20">
+                <el-col :span="24 / column1">
+                  <el-form-item label="信息资源名称">
+                    <span class="ellipsis text">{{formData1.name}}</span>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="24 / column1">
+                  <el-form-item label="资源提供方">
+                    <span class="ellipsis text">{{formData1.fromForShow}}</span>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="24 / column1">
+                  <el-form-item label="信息资源格式">
+                    <span class="ellipsis text">{{formData1.typeForShow}}</span>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="24 / column1">
+                  <el-form-item label="重点领域分类">
+                    <span class="ellipsis text">{{formData1.sortForShow}}</span>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-form>
+        </template>
+        <template v-else>
+          <el-form :model="form1" :rules="rules1" ref="editForm1" label-width="100px" label-position="top">
+            <el-row :gutter="20">
+              <el-col :span="24 / column1">
+                <el-form-item label="信息资源名称" prop="name">
+                  <el-input v-model="form1.name" placeholder=""></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24 / column1">
+                <el-form-item label="资源提供方" prop="from">
+                  <el-select v-model="form1.from" placeholder="" clearable style="width: 100%;">
+                    <el-option :label="item.label" :value="item.id" v-for="item in tableSelect1"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24 / column1">
+                <el-form-item label="信息资源格式" prop="type">
+                  <el-select v-model="form1.type" placeholder="" clearable style="width: 100%;">
+                    <el-option :label="item.label" :value="item.id" v-for="item in tableSelect2"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24 / column1">
+                <el-form-item label="重点领域分类" prop="sort">
+                  <el-select v-model="form1.sort" placeholder="" clearable style="width: 100%;">
+                    <el-option :label="item.label" :value="item.id" v-for="item in tableSelect3"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </template>
+        <div style="margin-bottom: 10px;" v-if="title1 !== '详情'">
+          <el-button type="primary" @click="addDataElement">新增信息项</el-button>
+        </div>
+        <el-table
+          stripe
+          :data="tableData1"
+          border
+          style="width: 100%">
+          <el-table-column
+            prop="chineseName"
+            label="中文名称">
+          </el-table-column>
+          <el-table-column
+            prop="englishName"
+            label="英文名称">
+          </el-table-column>
+          <el-table-column
+            fixed="right"
+            label="操作"
+            width="150">
+            <template slot-scope="scope">
+              <el-button @click="detailHandle2(scope.row, scope.$index)" type="text" size="small">查看</el-button>
+              <el-button @click="editHandle2(scope.row, scope.$index)" type="text" size="small" v-if="title1 !== '详情'">编辑</el-button>
+              <el-button @click="deleteHandle2(scope.row, scope.$index)" type="text" size="small" v-if="title1 !== '详情'">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <span slot="footer" class="dialog-footer" v-if="title1 !== '详情'">
+        <el-button @click="dialogCancel1" v-text="'取 消'"></el-button>
+        <el-button type="primary" @click="dialogcomfirm1" v-text="'确 定'"></el-button>
+      </span>
+    </el-dialog>
+    <!-- 一级弹窗结束 -->
+    <!-- 二级弹窗 -->
+    <el-dialog
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :title="title2"
+      @close="dialogClose2"
+      @open="dialogOpen2"
+      :visible.sync="dialogVisible2"
+      width="60%">
+      <div class="">
+        <template v-if="title2 === '详情'">
+            <el-form ref="detailForm1" label-width="100px" class="detail-form">
+              <el-form-item label="信息资源名称">
+                <span class="ellipsis text">{{formData2.chineseName}}</span>
+              </el-form-item>
+              <el-form-item label="资源提供方">
+                <span class="ellipsis text">{{formData2.englishName}}</span>
+              </el-form-item>
+            </el-form>
+        </template>
+        <template v-else>
+          <el-form :model="form2" :rules="rules2" ref="editForm2" label-width="100px">
+            <el-form-item label="信息资源名称" prop="chineseName">
+              <el-input v-model="form2.chineseName" placeholder=""></el-input>
+            </el-form-item>
+            <el-form-item label="信息资源名称" prop="englishName">
+              <el-input v-model="form2.englishName" placeholder=""></el-input>
+            </el-form-item>
+          </el-form>
+        </template>
+      </div>
+      <span slot="footer" class="dialog-footer" v-if="title2 !== '信息项详情'">
+        <el-button @click="dialogCancel2" v-text="'取 消'"></el-button>
+        <el-button type="primary" @click="dialogcomfirm2" v-text="'确 定'"></el-button>
+      </span>
+    </el-dialog>
+    <!-- 二级弹窗结束 -->
+  </div>
+  <script src="../../js/lib/jquery.min.js"></script>
+  <script src="../../js/lib/vue.min.js"></script>
+  <script src="../../js/lib/element-ui/index.js"></script>
+  <script src="../../component/common/index.js"></script>
+  <script src="../../js/util/index.js"></script>
+  <script src="./index.js"></script>
+  <script src="./index1.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../js/lib/mock.js"></script>
+  <script src="../../mock/index.js"></script>
+  <script src="../../mock/test/test.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var vm = new Vue({
+      el: '#app',
+      mixins: [dialog, dialog1],
+      data: function () {
+        return {
+          select1: [{label: '所属系统名称1', id: 1}, {label: '所属系统名称2', id: 2}], // 所属系统名称
+          select2: [{label: '目录状态1', id: 1}, {label: '目录状态2', id: 2}], // 目录状态
+          select3: [{label: '开放属性1', id: 1}, {label: '开放属性2', id: 2}], // 开放属性
+          select4: [{label: '归集状态1', id: 1}, {label: '归集状态2', id: 2}], // 归集状态
+          searchContent: {
+            realname: '',
+            select1: '',
+            select2: '',
+            select3: '',
+            select4: ''
+          }, // 搜索数据
+          documentClientHeight: 300,
+          currentPage: 1, // 当前页
+          pagination: {
+            page: 1,
+            limit: 10
+          }, // 分页
+          tableData1: [],
+          tableData: [], //table数据
+          queryData: [] // 批量删除数据
+        }
+      },
+      created () {
+        this.getTableData();
+      },
+      methods: {
+        getTableData (data) {
+          var result = $.extend(true, this.searchContent, this.pagination);
+          console.log(result)
+          api({
+            url: '/test/list',
+            type: 'get',
+            // data: result,
+            successFuc: function (res) {
+              vm.tableData = res.data;
+            }
+          })
+        },
+        getTableData1 () {
+          api({
+            url: '/test/list1',
+            type: 'get',
+            successFuc: function (res) {
+              vm.tableData1 = res.data;
+            }
+          })
+        },
+        // 搜索
+        searchHandle () {
+          this.getTableData();
+        },
+        // 新增
+        addHandle () {
+          this.title1 = '新增'
+          this.open1();
+        },
+        // 批量删除
+        deleteQueryHandle () {
+          if (this.queryData && this.queryData.length > 0) {
+            this.$confirm('确定要删除吗').then(function () {
+              console.log('删除', vm.queryData);
+            }).catch(function () {});
+          } else {
+            this.$message({
+              message: '未选择不能批量删除,请选择后操作',
+              type: 'warning'
+            });
+          }
+        },
+        // form赋值
+        copyData (data, form) {
+          form = form || this.form1;
+          for (var key in form) {
+            form[key] = data[key];
+          }
+        },
+        // 详情
+        detailHandle (row, index) {
+          console.log('详情', row, index);
+          this.title1 = '详情'
+          this.formData1 = clonedeep(row)
+          this.copyData(row);
+          this.open1();
+          this.getTableData1();
+        },
+        // 编辑
+        editHandle (row, index) {
+          console.log('编辑', row, index);
+          this.title1 = '编辑'
+          this.formData1 = clonedeep(row)
+          this.copyData(row);
+          this.open1();
+          this.getTableData1();
+        },
+        // 删除
+        deleteHandle (row, index) {
+          console.log('删除');
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', row.id);
+          }).catch(function () {});
+        },
+        // 注销
+        logOffHandle (row, index) {
+          console.log('注销', row, index);
+          this.$confirm('确定要注销吗').then(function () {
+            console.log('注销', row.id);
+          }).catch(function () {});
+        },
+        // 生成归集
+        setHandle (row, index) {
+          console.log('生成归集', row, index);
+        },
+        // table多选
+        selectionChangeHandle (rows) {
+          var arr = [];
+          rows.forEach(function (item) {
+            arr.push(item.id);
+          })
+          this.queryData = arr;
+        },
+        // 每页条数
+        handleSizeChange (val) {
+          console.log(`每页 ${val} 条`);
+        },
+        // 当前页
+        handleCurrentChange (val) {
+          console.log(`当前页: ${val}`);
+        },
+        // 详情
+        detailHandle2 (row, index) {
+          console.log('详情2', row, index);
+          this.title2 = '信息项详情'
+          this.formData2 = clonedeep(row)
+          this.copyData(row, this.form2);
+          this.open2();
+        },
+        // 编辑
+        editHandle2 (row, index) {
+          console.log('编辑2', row, index);
+          this.title2 = '信息项编辑'
+          this.formData2 = clonedeep(row)
+          console.log(this.formData2)
+          this.copyData(row, this.form2);
+          this.open2();
+        },
+        // 删除
+        deleteHandle2 (row, index) {
+          console.log('删除', row, index);
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', row.id);
+          }).catch(function () {});
+        },
+        addDataElement () {
+          this.title2 = '新增信息项'
+          this.open2()
+        }
+      }
+
+    })
+  </script>
+</body>
+</html>

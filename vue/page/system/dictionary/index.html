@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title>字典管理</title>
+</head>
+<body>
+  <div id="app" class="container">
+    <div class="header-layout">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input v-model="searchContent.name" placeholder="请输入字典名称"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="body-layout">
+      <k-table
+        @size-change-handle="sizeChangeHandle"
+        @current-change-handle="currentChangeHandle"
+        @edit-handle="editHandle"
+        @delete-handle="deleteHandle"
+        @dictionary-children-handle="dictionaryChildrenHandle"
+        :table="tableTree"/>
+    </div>
+    <!-- 弹窗组件 -->
+    <div>
+      <k-dialog
+        ref="dictionaryDialog"
+        :title="title1"
+        :is-btn-group="true"
+        :width="width"
+        @close-dialog-handle="closeDialogHandle"
+        @open-dialog-handle="openDialogHandle"
+        @cancel-handle="cancelHandle"
+        @confirm-handle="confirmHandle"
+      >
+        <template>
+          <k-form
+            @submit-handle="submitHandle"
+            ref="dictionaryForm"
+            :form="form"
+            :form-props="props"
+            :rules="rules"
+            :data="formData"
+          />
+        </template>
+      </k-dialog>
+    </div>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/page/system/dictionary/dictionaryDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/dictionary.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, dictionaryDialog],
+        data: function() {
+          return {
+            width: 'middle',
+            searchContent: {
+              name: ''
+            },
+            tableTree: {
+              loading: false,
+            // table数据
+              data: [],
+            // table 表头
+              tr: [
+                {
+                  prop: 'name',
+                  label: '菜单名称',
+                  width: 400
+                },
+                {
+                  prop: 'value',
+                  label: '字典值'
+                },
+                {
+                  prop: 'sort',
+                  label: '排序'
+                }
+              ],
+              hasSelect: false,
+              tree: {
+                hasTree: true,
+                treeKey: 'name',
+                expand: false,
+                checkStrictly: true
+              },
+             // 操作
+              operation: {
+                hasOperation: true,
+                label: '操作',
+                width: 150,
+                minWidth: '',
+                // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+                data: [{
+                  label: '字典项',
+                  id: 1,
+                  fn: 'dictionary-children-handle',
+                  permission: ''
+                }, {
+                  label: '编辑',
+                  id: 2,
+                  fn: 'edit-handle',
+                  permission: ''
+                }, {
+                  label: '删除',
+                  id: 3,
+                  fn: 'delete-handle',
+                  permission: ''
+                }]
+              },
+              pagination: {
+                hasPagination: true,
+                total: 0
+              }
+            },
+            pagination: {
+              page: 1,
+              limit: 10
+            },
+            formData: {}
+          }
+        },
+      created: function() {
+        this.getTableTreeData()
+      },
+      methods: {
+        searchHandle: function() {
+          this.getTableTreeData(this.searchContent)
+        },
+        // 新增
+        addHandle: function() {
+          this.title1 = CONFIG.ADD
+          this.open('dictionaryDialog')
+        },
+        // 添加子级
+        dictionaryChildrenHandle: function(index, row) {
+          var data = clonedeep(row)
+          var childData = {
+            parentId: data.id
+          }
+          this.formData = childData
+          this.title1 = '添加字典项'
+          this.open('dictionaryDialog')
+          console.log('字典项', index, row)
+        },
+        // 编辑
+        editHandle: function(index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.EDIT
+          this.open('dictionaryDialog')
+          console.log('编辑', index, row)
+        },
+        // 删除
+        deleteHandle: function(index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () {})
+        },
+        // 获取tabletree数据
+        getTableTreeData: function(data) {
+          var self = this;
+          var data = $.extend(true, data, this.pagination)
+          console.log(data)
+          this.tableTree.loading = true
+          api({
+            url: '/sys/dictionary/list',
+            type: 'get',
+            successFuc: function(res) {
+              var expand = self.tableTree.tree && $.type(self.tableTree.tree.expand) ? self.tableTree.tree.expand : false
+              self.tableTree.data = treeDataTranslate(res.data, expand)
+              self.tableTree.pagination.total = res.count
+              self.tableTree.loading = false
+            }
+          })
+        },
+        currentChangeHandle: function(val) {
+          this.pagination.page = val
+          this.getTableTreeData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function(val) {
+          this.pagination.limit = val
+          this.getTableTreeData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        },
+        openDialog: function() {
+          this.title1 = '详情'
+          this.open('dictionaryDialog')
+        }
+      }
+    })
+  </script>
+</body>
+</html>

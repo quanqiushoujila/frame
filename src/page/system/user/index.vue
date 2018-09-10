@@ -15,7 +15,7 @@
           <delete-query-btn @deleteQueryHandle="deleteQueryHandle"/>
         </el-form-item>
         <el-form-item>
-          <export-btn @exportHandle="exportHandle"/>
+          <export-btn @exportHandle="exportHandle" v-dbClick/>
         </el-form-item>
       </el-form>
     </header-layout>
@@ -29,6 +29,12 @@
         @deleteHandle="deleteHandle"
         @repeatPasswordHandle="repeatPasswordHandle"
         :table="table">
+        <template slot-scope="props" slot="username">
+          <div style="color: red;">{{props.data.row.username}}</div>
+        </template>
+        <template slot-scope="props" slot="email">
+          <div style="color: blue;">{{props.data.row.email}}</div>
+        </template>
       </k-table>
     </body-layout>
 
@@ -46,10 +52,10 @@
 </template>
 <script>
 // import clonedeep from 'lodash/clonedeep'
-// import {resetObject} from 'js/util'
 import merge from 'lodash/merge'
 import { sysUserList } from 'js/api/system/user'
 import common from 'js/mixin/common'
+import {getRealData} from 'js/util/index'
 import headerLayout from 'components/_layout/headerLayout'
 import bodyLayout from 'components/_layout/bodyLayout'
 import addBtn from 'components/_btn/addBtn'
@@ -78,15 +84,21 @@ export default {
           {
             prop: 'realname',
             label: '登录名',
-            show: true
+            show: false
           },
           {
             prop: 'username',
-            label: '姓名'
+            label: '姓名',
+            template: true
           },
           {
             prop: 'email',
-            label: '邮箱'
+            label: '邮箱',
+            template: true
+          },
+          {
+            prop: 'roleIdForShow',
+            label: '角色'
           }
         ],
         hasSelect: true,
@@ -162,6 +174,7 @@ export default {
       sysUserList(data).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
           this.table.data = res.data
+          this.table.data = getRealData({name: 'roleId', data: res.data, dicName: 'is_require'})
           this.table.pagination.total = res.count
           this.table.loading = false
         }

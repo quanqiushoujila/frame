@@ -7,6 +7,9 @@ import { children } from './childrenMenu'
 Vue.use(Router)
 
 let globalRoutes = [
+  // 测试
+  { path: '/test/test1', name: 'table', component: _import('test/test1/index'), meta: {title: '案例1'} },
+
   { path: '/', redirect: '/login' },
   { path: '/login', name: 'login', component: _import('common/login'), meta: {title: '登录'} },
   { path: '/404', name: '404', component: _import('common/404'), meta: {title: '404'} },
@@ -71,6 +74,7 @@ function removeSession () {
   sessionStorage.setItem('menuList', []) // 菜单
   sessionStorage.setItem('permissions', []) // 权限
   sessionStorage.setItem('menuIndexList', []) // 主菜单
+  sessionStorage.setItem('dicList', []) // 字典
 }
 
 export default router

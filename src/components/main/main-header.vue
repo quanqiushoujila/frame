@@ -22,7 +22,7 @@
             </span>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
-                <router-link to="">修改密码</router-link>
+                <span @click="addMenu('menu')">修改密码</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -57,6 +57,7 @@
 </template>
 <script>
 import { logout } from 'js/api/common/index'
+import {getCurrentMenu} from 'js/util/index'
 export default {
   name: 'mainHeader',
   props: {
@@ -81,9 +82,33 @@ export default {
     },
     menuIcon () {
       return this.sidebarFold ? 'icon-liebiaozhankai' : 'icon-liebiaoshouqi'
+    },
+    mainTabs: {
+      get () { return this.$store.state.common.mainTabs },
+      set (val) { this.$store.commit('common/updateMainTabs', val) }
+    },
+    mainTabsActiveName: {
+      get () { return this.$store.state.common.mainTabsActiveName },
+      set (val) { this.$store.commit('common/updateMainTabsActiveName', val) }
+    },
+    menuActiveName: {
+      get () { return this.$store.state.common.menuActiveName },
+      set (val) { this.$store.commit('common/updateMenuActiveName', val) }
     }
   },
   methods: {
+    addMenu (name) {
+      getCurrentMenu(name)
+      // const list = this.mainTabs.filter((item) => {
+      //   return item.id === menu.id
+      // })
+      // if (list.length === 0) {
+      //   this.mainTabs.push(menu)
+      // }
+      // this.mainTabsActiveName = name
+      // this.menuActiveName = name
+      // this.$router.push({name: menu.filename})
+    },
     logout () {
       this.$confirm(`确定进行[退出]操作?`, '提示', {
         confirmButtonText: '确定',

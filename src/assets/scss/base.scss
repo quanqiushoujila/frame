@@ -36,9 +36,15 @@
 .text-center {
   text-align: center;
 }
-// @media screen and (min-width: 1140px) {
-//   body {
-//     width: 1140px;
-//     overflow: hidden;
-//   }
-// }
+.pointer {
+  cursor: pointer;
+}
+.default {
+  cursor: default;
+}
+.noDrop {
+  cursor: no-drop;
+}
+.underline {
+  text-decoration: underline;
+}

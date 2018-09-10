@@ -152,6 +152,7 @@
   }
 }
 
+// 上传
 .upload-form {
   .el-upload {
     width: 100%;
@@ -163,5 +164,30 @@
     position: absolute;
     right: 0px;
     top: 0px
+  }
+}
+
+// 表格
+.el-table--medium td, .el-table--medium th {
+  padding: 7px 0 !important;
+}
+.el-table th > .cell {
+  text-align: center;
+}
+.el-table th.el-table-column--selection > .cell {
+  text-align: left;
+}
+// checkbox
+.el-checkbox-group {
+  height: 40px !important;
+}
+// 详情
+.detail-form {
+  .text {
+    display: block;
+    border: 1px solid #dcdfe6;
+    padding: 0 15px;
+    height: 40px;
+    line-height: 40px;
   }
 }

@@ -1,6 +1,6 @@
 <!-- 导入按钮 -->
 <template>
-  <el-button @click="click" type="warning" icon="el-icon-upload2">导出</el-button>
+  <el-button @click="click" type="warning" icon="el-icon-upload2">导入</el-button>
 </template>
 <script>
 export default {

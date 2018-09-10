@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title>资源目录</title>
+</head>
+<body>
+  <div id="app" class="container">
+    <k-tab :data="data" @open-table="openTable" v-show="visibility"></k-tab>
+    <div v-show="!visibility">
+      <el-button @click="back" class="back-btn" v-text="'返回'"></el-button>
+      <k-table
+        @size-change-handle="sizeChangeHandle"
+        @current-change-handle="currentChangeHandle"
+        @detail-handle="detailHandle"
+        :table="table"/>
+    </div>
+    <k-dialog
+      ref="resourcesDialog"
+      :dialog-visible="dialogVisible"
+      :title="title1"
+      :width="width"
+      :is-btn-group="false"
+      @close-dialog-handle="closeDialogHandle"
+      @open-dialog-handle="openDialogHandle"
+      >
+      <div>
+        <k-detail
+          label-width="110px"
+          class="detail"
+          :props="props"
+          :data="formData"
+          >
+        </k-detail>
+        <k-table
+          @data-element-detail-handle="dataElementDetailHandle"
+          :table="resourceTable"/>
+      </div>
+    </k-dialog>
+    <k-dialog
+      ref="dataElementDialog"
+      :dialog-visible="dialogVisible2"
+      title="信息项详情"
+      :width="width"
+      :is-btn-group="false"
+      @close-dialog-handle="closeDialogHandle2"
+      @open-dialog-handle="openDialogHandle2"
+      >
+      <k-detail
+        label-width="130px"
+        class="detail"
+        :props="props2"
+        :data="formData2"
+        />
+    </k-dialog>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../component/tab/tab.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/page/catalog/resourcesCatalog/resourcesDialog.js"></script>
+  <script src="../../../js/page/catalog/resourcesCatalog/dataElementDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/catalog/resourcesCatalog/index.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, resourcesDialog, dataElementDialog],
+      data: function() {
+        return {
+          width: 'middle',
+          data: [{
+              label: '部门类',
+              data: []
+            }, {
+              label: '基础资源分类',
+              data: []
+            }, {
+              label: '主题资源分类',
+              data: []
+          }],
+          table: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [{
+              prop: 'code',
+              label: '信息资源编码'
+            }, {
+              prop: 'nameCn',
+              label: '信息资源名称'
+            }],
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 100,
+              minWidth: '',
+            // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                label: '详情',
+                id: 1,
+                fn: 'detail-handle',
+                permission: ''
+              }]
+            },
+            pagination: {
+              total: 10,
+              page: 1,
+              limit: 10
+            }
+          },
+          formData: {},
+          visibility: true,
+          dataElementData: {}
+        }
+      },
+      created: function() {
+        this.getDepart()
+        this.getClassify()
+        this.getTopicClassify()
+      },
+      methods: {
+        // 部门类
+        getDepart: function() {
+          var self = this;
+          api({
+            url: '/catalog/resourcesCatalog/depart',
+            method: 'get',
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                self.data[0].data = res.data
+              }
+            }
+          });
+        },
+        // 基础资源分类
+        getClassify: function() {
+          var self = this;
+          api({
+            url: '/catalog/resourcesCatalog/classify',
+            method: 'get',
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                self.data[1].data = res.data
+              }
+            }
+          });
+        },
+        // 主题资源分类
+        getTopicClassify: function() {
+          var self = this;
+          api({
+            url: '/catalog/resourcesCatalog/topicClassify',
+            method: 'get',
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                self.data[2].data = res.data
+              }
+            }
+          });
+        },
+        getTableData: function(data) {
+          let self = this;
+          api({
+            url: '/catalog/resourcesCatalog/table',
+            method: 'get',
+            // data: data,
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                self.table.data = res.data
+              }
+            }
+          });
+        },
+        openTable: function(item) {
+          console.log(item)
+          if (item.count) {
+            this.getTableData({deptId: item.id})
+          }
+          // console.log(item)
+          this.visibility = !this.visibility
+        },
+        // 返回
+        back: function() {
+          this.visibility = !this.visibility
+        },
+        currentChangeHandle: function(val) {
+          this.pagination.page = val
+          // this.getTableData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function(val) {
+          this.pagination.limit = val
+          // this.getTableData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        },
+        detailHandle: function(index, row) {
+          this.formData = row
+          this.title1 = CONFIG.DETAIL
+          this.$refs.resourcesDialog.open()
+        },
+        getChildDetailData: function(row) {
+          this.dataElementData = row
+          this.$refs.dataElementDialog.open()
+        }
+      }
+    })
+  </script>
+</body>
+</html>

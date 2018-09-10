@@ -3,7 +3,7 @@
     :label="label"
     :min-width="minWidth ? minWidth : ''"
     :width="width ? width : ''"
-    :prop="prop">
+    :prop="prop || ''">
     <template slot-scope="scope">
       <span
         @click.prevent="toggleHandle(scope.$index, scope.row)"

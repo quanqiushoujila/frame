@@ -130,8 +130,9 @@ export default {
     },
     // 获取tabletree数据
     getTableData (data = {}) {
+      const result = merge(this.pagination, this.searchContent, data)
       this.tableTree.loading = true
-      sysCompartmentList(data).then((res) => {
+      sysCompartmentList(result).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
           const expand = this.tableTree.tree && isBoolean(this.tableTree.tree.expand) ? this.tableTree.tree.expand : false
           this.tableTree.data = treeDataTranslate(res.data, expand)
@@ -142,8 +143,7 @@ export default {
     },
     // 搜索
     searchHandle () {
-      const result = merge(this.pagination, this.searchContent)
-      this.getTableData(result)
+      this.getTableData()
     },
     // 添加子级
     childrenHandle (index, row) {

@@ -32,6 +32,7 @@ http.interceptors.response.use(response => {
     sessionStorage.setItem('menuList', []) // 菜单
     sessionStorage.setItem('permissions', []) // 权限
     sessionStorage.setItem('menuIndexList', []) // 主菜单
+    sessionStorage.setItem('dicList', {}) // 字典
     router.options.isAddDynamicMenuRoutes = false
     router.push({ name: 'login' })
   }

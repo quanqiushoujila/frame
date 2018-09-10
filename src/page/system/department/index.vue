@@ -179,13 +179,18 @@ export default {
       this.getAreaName()
       this.getComLevel()
     },
+    searchHandle () {
+      console.log('搜索', this.searchContent)
+      this.getTableData()
+    },
     open () {
       this.$refs.compartmentDialog.open()
     },
     // 获取table数据
     getTableData (data = {}) {
+      const result = merge(this.pagination, this.searchContent, data)
       this.table.loading = true
-      sysDepartmentList(data).then((res) => {
+      sysDepartmentList(result).then((res) => {
         if (res.code === this.GLOBAL.SUCCESS) {
           this.table.data = res.data
           this.table.pagination.total = res.count
@@ -219,11 +224,6 @@ export default {
           this.areaIdOptions = res.data
         }
       })
-    },
-    searchHandle () {
-      console.log('搜索', this.searchContent)
-      const result = merge(this.pagination, this.searchContent)
-      this.getTableData(result)
     }
   }
 }

@@ -10,16 +10,21 @@
     :lock-scroll="lockScroll"
     :visible.sync="dialogVisible"
     :before-close="beforeCloseHandle"
+    :fullscreen="fullscreen"
     @open="openDialogHandle"
     @close="closeDialogHandle">
     <div class="dialog-body" :style="bodyStyle" ref="dialogBody">
-      <slot></slot>
+      <div ref="bodyHeight">
+        <slot></slot>
+      </div>
     </div>
     <div slot="footer" class="dialog-footer" v-if="isBtnGroup">
       <el-button
         v-for="(item, index) in btnGroup"
         :key="item.name"
         :type="btnTypes[index]"
+        v-if="isBtnShow(item.show)"
+        :disabled="isDisabled(item.disabled)"
         @click="clickHandle(item.fn)">
         {{item.name}}
       </el-button>
@@ -27,10 +32,17 @@
   </el-dialog>
 </template>
 <script>
+import isBoolean from 'lodash/isBoolean'
 export default {
   name: 'kDialog',
   data () {
     return {
+      newWidth: '50%',
+      dialogFootHeight: 70,
+      minDialogBodyHeight: 250,
+      documentClientHeight: 250,
+      // body自定义样式
+      bodyStyle: {},
       dialogVisible: false,
       btnTypes: ['', 'primary', 'warning', 'info', 'success', 'danger']
     }
@@ -92,16 +104,11 @@ export default {
           },
           {
             name: '确认',
-            fn: 'confirmHandle'
+            fn: 'confirmHandle',
+            show: true,
+            disabled: false
           }
         ]
-      }
-    },
-    // body自定义样式
-    bodyStyle: {
-      type: Object,
-      default () {
-        return {}
       }
     },
     appendToBody: {
@@ -110,12 +117,36 @@ export default {
     }
   },
   computed: {
-    newWidth () {
-      const size = [{name: 'large', width: '80%'}, {name: 'middle', width: '65%'}, {name: 'small', width: '50%'}, {name: 'mini', width: '30%'}]
-      const index = size.findIndex((item) => {
-        return item.name === this.width
-      })
-      return index === -1 ? this.width : size[index].width
+  },
+  mounted () {
+    this.resetDocumentClientHeight()
+  },
+  watch: {
+    newWidth: {
+      handler (newVal) {
+        const size = [{name: 'large', width: '80%'}, {name: 'middle', width: '65%'}, {name: 'small', width: '50%'}, {name: 'mini', width: '30%'}]
+        const index = size.findIndex((item) => {
+          return item.name === this.width
+        })
+        this.newWidth = index === -1 ? this.width : size[index].width
+        if (this.fullscreen) {
+          this.newWidth = '100%'
+        }
+      },
+      immediate: true
+    },
+    dialogVisible (newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          const height = this.$refs.bodyHeight.offsetHeight
+          if (height < this.minDialogBodyHeight) {
+            this.bodyStyle = {'height': (this.minDialogBodyHeight) + 'px'}
+          }
+          if (this.fullscreen) {
+            this.bodyStyle = {'height': `${window.innerHeight - (70 + 54 + 60)}px`}
+          }
+        })
+      }
     }
   },
   methods: {
@@ -124,6 +155,31 @@ export default {
     },
     close () {
       this.dialogVisible = false
+    },
+    isBtnShow (status) {
+      const result = isBoolean(status) ? (status ? 1 : 0) : 1
+      return !!result
+    },
+    isDisabled (status) {
+      const result = isBoolean(status) ? (status ? 1 : 0) : 0
+      return !!result
+    },
+    // 按钮是否禁用
+    toggleDisabledButton (name = '确认', status) {
+      for (let i = 0, len = this.btnGroup.length; i < len; i++) {
+        if (this.btnGroup[i].name === name) {
+          if (status && isBoolean(status)) {
+            this.$set(this.btnGroup[i], 'disabled', status)
+          } else {
+            if (this.btnGroup[i].disabled) {
+              this.$set(this.btnGroup[i], 'disabled', false)
+            } else {
+              this.$set(this.btnGroup[i], 'disabled', true)
+            }
+          }
+          break
+        }
+      }
     },
     // 关闭前的回调，会暂停 Dialog 的关闭
     beforeCloseHandle (done) {
@@ -138,13 +194,37 @@ export default {
     closeDialogHandle () {
       setTimeout(() => {
         this.$refs.dialogBody.scrollTo(0, 0)
-      }, 100)
+      }, 50)
       this.$emit('closeDialogHandle')
       this.close()
     },
     // 自定义方法
     clickHandle (fn) {
       this.$emit(fn)
+    },
+    setDialogHeight () {
+      const padding = 120
+      const outter = 80
+      const otherHeight = 120
+      const other = outter + padding + otherHeight
+      const height = other + this.minDialogBodyHeight
+      if (height < this.documentClientHeight - other) {
+        this.bodyStyle = {'height': (this.documentClientHeight - other) + 'px'}
+      } else {
+        this.bodyStyle = {'height': (this.minDialogBodyHeight) + 'px'}
+      }
+      if (this.fullscreen) {
+        this.bodyStyle = {'height': `${window.innerHeight - (70 + 54 + 60)}px`}
+      }
+    },
+    // 重置窗口可视高度
+    resetDocumentClientHeight () {
+      this.documentClientHeight = document.documentElement['clientHeight']
+      this.setDialogHeight()
+      window.onresize = () => {
+        this.documentClientHeight = document.documentElement['clientHeight']
+        this.setDialogHeight()
+      }
     }
   }
 }
@@ -153,7 +233,6 @@ export default {
 <style lang="scss" scoped>
 .dialog-body {
   height: 300px;
-  // min-height: calc(100vh - 300px);
   overflow: auto;
   margin: 0 -20px;
   padding: 0 20px;

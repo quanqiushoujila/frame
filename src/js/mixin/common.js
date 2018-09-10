@@ -44,8 +44,8 @@ export default {
       }).catch(() => {})
     },
     // 新增
-    addHandle () {
-      this.title1 = this.GLOBAL.ADD
+    addHandle (title = 'title1') {
+      this[title] = this.GLOBAL.ADD
       this.open && this.open()
       console.log('新增')
     },
@@ -98,7 +98,7 @@ export default {
       if (this.getTableData) {
         this.getTableData(this.pagination)
       } else {
-        this.paginationHandle()
+        this.paginationHandle && this.paginationHandle()
       }
       console.log('currentChangeHandle', val)
     },
@@ -115,6 +115,27 @@ export default {
     selectionChangeHandle (ids, val) {
       console.log(ids, val)
       this.queryData = ids
+    },
+    // 隐藏table按钮
+    hideTableBtn () {
+      var data = this[arguments[0]].operation.data
+      var btns = Array.prototype.slice.call(arguments, 1)
+      data.forEach((item) => {
+        btns.forEach((item1) => {
+          if (item1 === item.name) {
+            item.show = false
+            return false
+          }
+        })
+      })
+    },
+    // 还原table按钮
+    restoreTableBtn (table = 'table') {
+      this[table].operation.data.forEach((item) => {
+        if (!item.show) {
+          item.show = true
+        }
+      })
     }
   }
 }

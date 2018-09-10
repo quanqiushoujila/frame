@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title>行政区划</title>
+</head>
+<body>
+  <div id="app" class="container">
+    <div class="menu-manage" :style="{ 'min-height': (documentClientHeight - 115) + 'px' }">
+      <div class="header-layout">
+        <el-form :inline="true">
+          <el-form-item>
+            <el-input v-model="searchContent.name" placeholder="请输入行政区划名称"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="searchContent.code" placeholder="请输入行政区划代码"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="body-layout">
+        <k-table
+          @size-change-handle="sizeChangeHandle"
+          @current-change-handle="currentChangeHandle"
+          @edit-handle="editHandle"
+          @delete-handle="deleteHandle"
+          @children-handle="childrenHandle"
+          :table="tableTree"/>
+      </div>
+
+      <!-- 新增修改详情 -->
+      <k-dialog
+        ref="compartmentDialog"
+        :title="title1"
+        :width="'middle'"
+        :is-btn-group="isBtnGroup"
+        @close-dialog-handle="closeDialogHandle"
+        @open-dialog-handle="openDialogHandle"
+        @cancel-handle="cancelHandle"
+        @confirm-handle="confirmHandle"
+        >
+        <template>
+          <k-form
+            @submit-handle="submitHandle"
+            ref="compartmentForm"
+            :form="form"
+            :form-props="props"
+            :rules="rules"
+            :data="formData"
+          />
+        </template>
+      </k-dialog>
+    </div>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../js/icon.js"></script>
+  <script src="../../../js/page/system/compartment/compartmentDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/compartment.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, compartmentDialog],
+      data: function() {
+        return {
+          searchContent: {
+            name: '',
+            code: ''
+          },
+          tableTree: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                prop: 'name',
+                label: '区划名称',
+                width: 400
+              },
+              {
+                prop: 'code',
+                label: '区划代码'
+              },
+              {
+                prop: 'sort',
+                label: '排序'
+              }
+            ],
+            hasSelect: false,
+            tree: {
+              treeKey: 'name'
+            },
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 150,
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                label: '子级',
+                id: 1,
+                fn: 'children-handle',
+                permission: ''
+              }, {
+                label: '编辑',
+                id: 2,
+                fn: 'edit-handle',
+                permission: ''
+              }, {
+                label: '删除',
+                id: 3,
+                fn: 'delete-handle',
+                permission: ''
+              }]
+            },
+            pagination: {
+              hasPagination: true,
+              total: 0
+            }
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          formData: {}
+        }
+      },
+      created: function() {
+        this.getTableTreeData()
+      },
+      methods: {
+        // 搜索
+        searchHandle: function() {
+          var data = {name: this.searchContent.name, code: this.searchContent.code}
+          this.getTableTreeData(data)
+        },
+        // 新增
+        addHandle: function() {
+          this.title1 = CONFIG.ADD
+          this.open('compartmentDialog')
+        },
+        // 添加子级
+        childrenHandle: function(index, row) {
+          var data = clonedeep(row)
+          var childData = {
+            parentId: data.id,
+            parentName: data.name
+          }
+          this.formData = childData
+          this.title1 = '添加子级行政区划'
+          this.open('compartmentDialog')
+          console.log('子级', index, row)
+        },
+        // 编辑
+        editHandle: function(index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.EDIT
+          this.open('compartmentDialog')
+          console.log('编辑', index, row)
+        },
+        // 删除
+        deleteHandle: function(index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () {})
+        },
+        // 获取tabletree数据
+        getTableTreeData: function(data) {
+          let self = this;
+          var data = $.extend(true, data, this.pagination)
+          this.tableTree.loading = true
+          console.log(data)
+          api({
+            url: '/sys/compartment/list',
+            type: 'get',
+            // data: data,
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                var expand = self.tableTree.tree && $.type(self.tableTree.tree.expand) === 'boolean' ? self.tableTree.tree.expand : false
+                self.tableTree.data = treeDataTranslate(res.data, expand)
+                self.tableTree.pagination.total = res.count
+                self.tableTree.loading = false
+              }
+            }
+          })
+        },
+        currentChangeHandle: function(val) {
+          this.pagination.page = val
+          this.getTableTreeData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function(val) {
+          this.pagination.limit = val
+          this.getTableTreeData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        }
+      }
+    })
+  </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+import clonedeep from 'lodash/clonedeep'
+import {resetObject} from 'js/util/index'
 export default {
   data () {
     return {
@@ -8,7 +10,14 @@ export default {
       // 弹窗ref
       dialogRef: '',
       // 表单form
-      formRef: ''
+      formRef: '',
+      removeRules: [],
+      oldRules: {}
+    }
+  },
+  mounthed () {
+    if (this.rules) {
+      this.oldRules = clonedeep(this.rules)
     }
   },
   watch: {
@@ -18,6 +27,15 @@ export default {
       } else {
         this.isBtnGroup = true
       }
+    },
+    formData: {
+      handler (newVal) {
+        for (let key in this.form) {
+          const value = clonedeep(newVal[key])
+          this.form[key] = value
+        }
+      },
+      deep: true
     }
   },
   methods: {
@@ -27,12 +45,19 @@ export default {
     },
     // 打开
     open () {
-      console.log('open', this.dialogRef)
       this.$refs[this.dialogRef].open()
     },
     // 取消
     cancelHandle () {
       this.close()
+    },
+    // 按钮是否被禁用
+    toggleDisabledButton () {
+      this.$refs[this.dialogRef].toggleDisabledButton()
+    },
+    // 确定
+    confirmHandle () {
+      this.$refs[this.formRef].submitHandle()
     },
     setOptions (name, props, data) {
       props.forEach((item) => {
@@ -55,10 +80,6 @@ export default {
         this.$refs[ref || this.formRef].validate()
       })
     },
-    // 清除数据和验证
-    clearForm (ref) {
-      this.$refs[ref || this.formRef].clearForm()
-    },
     // 重新验证
     revalidationValidate (ref) {
       this.clearValidate(ref)
@@ -67,6 +88,28 @@ export default {
     // 表单提交操作
     submitHandle (data) {
       this.close()
+    },
+    // 去除验证规则
+    changeRulesHandle () {
+      let rules = this.rules
+      this.removeRules.forEach(function (item) {
+        for (let key in rules) {
+          if (item === key) {
+            delete rules[key]
+            break
+          }
+        }
+      })
+      this.revalidationValidate()
+    },
+    // 还原验证规则
+    restoreRulesHandle () {
+      this.rules = clonedeep(this.oldRules)
+    },
+    // 数据重置
+    clearForm (data) {
+      resetObject(data || this.formData)
+      this.$refs[this.formRef].resetForm()
     }
   }
 }

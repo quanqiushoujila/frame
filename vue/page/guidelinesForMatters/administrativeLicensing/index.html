@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <link rel="stylesheet" href="../../../css/administrativeLicensing.css">
+  <title>行政许可</title>
+</head>
+<body>
+  <div id="app" class="container">
+    <!-- 页面着陆页 start -->
+    <div v-if="mainVisible">
+      <div>
+        <el-row :gutter="20">
+          <el-col :span="4">
+            <el-input v-model="searchData.text" placeholder="请输入事项名称或代码"></el-input>
+          </el-col>
+          <el-col :span="3">
+            <el-select v-model="searchData.searchOptionSelection" placeholder="请选择" clearable>
+              <el-option
+                v-for="item in searchData.options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+                style="text-align: center;"
+                >
+              </el-option>
+            </el-select>
+          </el-col>
+          <el-col :span="17">
+            <el-button @click="mainSearch"  icon="el-icon-search" class="search-btn"><span v-text="'搜索'"></span></el-button>
+            <el-button @click="openSteps('新增')" type="primary" icon="el-icon-plus" class="add-btn"><span v-text="'新增'"></span></el-button>
+            <el-button @click="" icon="el-icon-download" class="download-btn"><span v-text="'下载模板'"></span></el-button>
+            <el-button @click="" icon="el-icon-news" type="info" class="import-btn"><span v-text="'导入'"></span></el-button>
+            <el-button @click="" icon="el-icon-upload2" type="warning" class="export-btn"><span v-text="'导出'"></span></el-button>
+            <el-button @click="operationDelete('批量删除')" type="danger" icon="el-icon-delete" class="delete-btn"><span v-text="'批量删除'"></span></el-button>
+          </el-col>
+        </el-row>
+      </div>
+      <div id="administrativeLicensingTable">
+        <el-table
+          ref="administrativeLicensingTable"
+          :data="administrativeLicensingTableData"
+          style="width: 100%"
+          @selection-change="tableSelectionChange"
+          border
+        >
+          <el-table-column
+            type="selection"
+            width="59"
+            align="center"
+            fixed="left"
+            :resizable="false">
+          </el-table-column>
+          <el-table-column
+            prop="organizationName"
+            label="事项名称"
+            align="center"
+            show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+            prop="matterCode"
+            label="事项编码"
+            align="center"
+            show-overflow-tooltip>
+          </el-table-column>
+          <el-table-column
+            prop="organizationName"
+            label="实施机构"
+            width="180"
+            align="center"
+            :resizable="false">
+          </el-table-column>
+          <el-table-column
+            prop="matterType"
+            label="事项类别"
+            width="180"
+            align="center"
+            :resizable="false">
+          </el-table-column>
+          <el-table-column
+            prop="state.label"
+            label="状态"
+            width="180"
+            align="center"
+            :resizable="false">
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            align="center"
+            width="300"
+            fixed="right"
+            :resizable="false">
+            <template slot-scope="scope">
+              <el-button
+                type="text"
+                size="small"
+                @click="operationSubmit(scope.$index, scope.row)">提交</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="operationDetails(scope.$index, scope.row)">详情</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="operationEdit(scope.$index, scope.row)">编辑</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="operationDownload(scope.$index, scope.row)">下载</el-button>
+              <el-button
+                type="text"
+                size="small"
+                @click="operationDelete(scope.$index, scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div style="float: right; margin-top: 5px; margin-right: 10px;">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pagination.page"
+            :page-sizes="[10, 20, 30, 40]"
+            :page-size="pagination.limit"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="administrativeLicensingTableData.length">
+          </el-pagination>
+        </div>
+      </div>
+    </div>
+    <!-- 页面着陆页 end -->
+    <!-- 步骤条 Header start -->
+    <div v-else>
+      <div class="step-header">
+        <div class="lside">
+          <el-steps :active="stepActive" align-center>
+            <el-step title="步骤一"></el-step>
+            <el-step title="步骤二"></el-step>
+            <el-step title="步骤三"></el-step>
+            <el-step title="完成"></el-step>
+          </el-steps>
+        </div>
+        <div class="rside">
+          <el-button class="btn" type="text" @click="closeSteps" v-text="'返回列表>>'"></el-button>
+        </div>
+      </div>
+      <!-- 步骤条 Header end -->
+      <!-- 步骤条 side1 start -->
+      <div class="step" v-show="stepActive === 0">
+        <el-form :model="stepOneFormData" :rules="DETAILS ? '' : rulesOfStepOne" status-icon ref="stepOneFormData">
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'事项名称：'"></el-col>
+            <el-col :span="9">
+              <el-select :disabled="DETAILS" v-model="stepOneFormData.matterSelection" placeholder="请选择" @change="matterSelectionChange">
+                <el-option
+                  v-for="item in step1.matterList"
+                  :key="item.id"
+                  :label="item.matterName"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="3" class="text-r" v-text="'事项代码：'"></el-col>
+            <el-col :span="9">
+              <el-input v-model="stepOneFormData.matterCode" readonly></el-input>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'事项类别：'"></el-col>
+            <el-col :span="9">
+              <el-input
+                v-model="stepOneFormData.matterType"
+                readonly>
+              </el-input>
+            </el-col>
+            <el-col :span="3" class="text-r" v-text="'事项原代码：'"></el-col>
+            <el-col :span="9">
+              <el-form-item prop="matterOriginalCode">
+                <el-input
+                  placeholder="请输入该事项原代码"
+                  v-model="stepOneFormData.matterOriginalCode"
+                  :readonly="DETAILS">
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'服务对象：'"></el-col>
+            <el-col :span="21" class="lineH1">
+              <el-form-item prop="serviceOptionSelection">
+                <el-checkbox-group :disabled="DETAILS" v-model="stepOneFormData.serviceOptionSelection" @change="()=>{console.log(this.stepOneFormData.serviceOptionSelection)}">
+                  <el-checkbox :label="item.label" name="serviceOptionSelection" v-for="(item, index) in step1.serviceOptions" border></el-checkbox>
+                </el-checkbox-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'设定依据：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="setTheBasis">
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 4, maxRows: 4}"
+                  placeholder="请输入设定依据内容"
+                  v-model="stepOneFormData.setTheBasis"
+                  resize="none"
+                  :readonly="DETAILS">
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows title" v-text="'行使权限'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'行使层级：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="exerciseLevelSelection">
+                <el-checkbox-group :disabled="DETAILS" v-model="stepOneFormData.exerciseLevelSelection">
+                  <el-checkbox :label="item.label" name="exerciseLevelSelection" v-for="(item, index) in step1.exerciseLevels" border></el-checkbox>
+                </el-checkbox-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'行使类型：'"></el-col>
+            <el-col :span="21">
+              <el-radio :disabled="DETAILS" v-model="stepOneFormData.exerciseTypeSelection" :label="item.value" v-for="(item, index) in step1.exerciseTypes" border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'权限划分：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="divisionOfAuthority">
+                <el-input :readonly="DETAILS" type="textarea" :autosize="{ minRows: 4, maxRows: 4}" :maxlength="200" placeholder="请输入权限划分内容" v-model="stepOneFormData.divisionOfAuthority"
+                resize="none">
+              </el-form-item>
+              </el-input>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'行使内容：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="exerciseContentText">
+                <el-input :readonly="DETAILS" type="textarea" :autosize="{ minRows: 4, maxRows: 4}" :maxlength="200" placeholder="请输入行使内容" v-model="stepOneFormData.exerciseContentText"
+                resize="none"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows title" v-text="'实施机构'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'名称：'"></el-col>
+            <el-col :span="21" class="lineH1">
+              <el-form-item prop="organizationName">
+                <el-input :readonly="DETAILS" v-model="stepOneFormData.organizationName" placeholder="请填写机构的中文全称"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'实施单位性质：'"></el-col>
+            <el-col :span="9" class="lineH1">
+              <el-radio-group v-model="stepOneFormData.subjectPropertySelection" @change="subjectPropertyChange">
+                <el-radio :disabled="DETAILS" :label="item.value" v-for="(item, index) in step1.subjectPropertys" border>
+                  <span v-text="item.label"></span>
+                </el-radio>
+              </el-radio-group>
+            </el-col>
+            <el-col v-if="stepOneFormData.subjectPropertySelection == 2" :span="12" class="lineH1">
+              <el-col :span="1" class="text-c" v-text="'受'"></el-col>
+              <el-col :span="20">
+                <el-form-item :prop="stepOneFormData.subjectPropertySelection==2 ? 'subjectProperty' : ''">
+                  <el-input :readonly="DETAILS" v-model="stepOneFormData.subjectProperty" placeholder="请填写实施主体性质"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3" class="text-c" v-text="'委托'"></el-col>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'责任处(科)室或单位：'"></el-col>
+            <el-col :span="21" class="lineH1">
+              <el-form-item prop="unitInformation">
+                <el-input :readonly="DETAILS" v-model="stepOneFormData.unitInformation" placeholder="请填写责任处(科)室或单位信息"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'存在联办机构：'"></el-col>
+            <el-col :span="9" class="lineH1">
+              <el-radio-group v-model="stepOneFormData.hasJointAgenciySelection" @change="hasJointAgenciyChange">
+                <el-radio :disabled="DETAILS" :label="item.value" v-for="(item, index) in step1.hasJointAgencies" border>
+                  <span v-text="item.label"></span>
+                </el-radio>
+              </el-radio-group>
+            </el-col>
+            <el-col v-if="stepOneFormData.hasJointAgenciySelection == 1" :span="12" class="lineH1">
+              <el-select :disabled="DETAILS" v-model="stepOneFormData.jointAgenciesSelection">
+                <el-option v-for="item in step1.jointAgencies" :key="item.value" :label="item.label" :value="item.value"></el-option>
+              </el-select>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+      <!-- 步骤条 side1 end -->
+      <!-- 步骤条 side2 start -->
+      <div class="step" v-show="stepActive === 1">
+        <el-form :model="stepTwoFormData" :rules="DETAILS ? '' : rulesOfStepTwo" status-icon ref="stepTwoFormData">
+          <el-row class="rows title" v-text="'受理环节'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'受理条件：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="admissibility">
+                <el-input :readonly="DETAILS" type="textarea" :autosize="{ minRows: 4, maxRows: 4}" placeholder="请输入受理条件内容" v-model="stepTwoFormData.admissibility"
+                  resize="none"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'办理流程：'"></el-col>
+            <el-col :span="21">
+              <el-row class="rows-subset" class="lineH1">
+                <el-col :span="4" >
+                  <el-checkbox :disabled="DETAILS" v-model="stepTwoFormData.onlineProcess" border @change="function () {this.onlineProcessFileList = []}">
+                    <span v-text="'网上办理流程'"></span>
+                  </el-checkbox>
+                </el-col>
+                <el-col v-show="stepTwoFormData.onlineProcess" :span="DETAILS ? 20 : 17">
+                  <div :class="{'upload-list-box': stepTwoFormData.onlineProcess}" >
+                    <el-tag style="margin: 3px 5px 0px 5px;" v-for="(item, index) in stepTwoFormData.onlineProcessFileList" @close="deleteOnlineProcess(item, index)" :closable="!DETAILS">
+                      <span v-text="item.name"></span>
+                    </el-tag>
+                    <el-tag style="margin: 3px 5px 0px 5px;" v-if="!stepTwoFormData.onlineProcessFileList.length"><span v-text="'无数据'"></span></el-tag>
+                  </div>
+                </el-col>
+                <el-col v-show="stepTwoFormData.onlineProcess" v-if="!DETAILS" :span="3">
+                  <el-button v-if="!DETAILS" type="primary" icon="el-icon-upload" class="special-btn" @click="uploadDialogOpen('#', stepTwoFormData.onlineProcessFileList, 2)"><span v-text="'上传附件'"></span></el-button>
+                </el-col>
+              </el-row>
+              <el-row class="rows-subset" class="lineH1">
+                <el-col :span="4">
+                  <el-checkbox :disabled="DETAILS" v-model="stepTwoFormData.offlineProcess" border>
+                    <span v-text="'窗口办理流程'"></span>
+                  </el-checkbox>
+                </el-col>
+                <el-col v-show="stepTwoFormData.offlineProcess" :span="DETAILS ? 20 : 17">
+                  <div :class="{'upload-list-box': stepTwoFormData.offlineProcess}">
+                    <el-tag style="margin: 3px 5px 0px 5px;" v-for="(item, index) in stepTwoFormData.offlinePocessFileList" @close="deleteOfflineProcess(item, index)" :closable="!DETAILS">
+                      <span v-text="item.name"></span>
+                    </el-tag>
+                    <el-tag style="margin: 3px 5px 0px 5px;" v-if="!stepTwoFormData.offlinePocessFileList.length"><span v-text="'无数据'"></span></el-tag>
+                  </div>
+                </el-col>
+                <el-col v-show="stepTwoFormData.offlineProcess" v-if="!DETAILS" :span="3">
+                  <el-button v-if="!DETAILS" type="primary" icon="el-icon-upload" class="special-btn" @click="uploadDialogOpen('#', stepTwoFormData.offlinePocessFileList, 3)"><span v-text="'上传附件'"></span></el-button>
+                </el-col>
+              </el-row>
+              <el-row class="rows-subset">
+                <el-col :span="4">
+                  <el-checkbox :disabled="DETAILS" v-model="stepTwoFormData.specialTache" border @change="specialTacheChange">
+                    <span v-text="'特殊环节'"></span>
+                  </el-checkbox>
+                </el-col>
+                <el-col :span="20" :class="'special-box-s1'" v-if="stepTwoFormData.specialTache">
+                  <div class="title text-c" v-text="'特殊程序名称'"></div>
+                  <el-row>
+                    <el-form-item :prop="stepTwoFormData.specialTache ? 'specialProcedureNameSelection' : ''">
+                      <el-checkbox-group :disabled="DETAILS" v-model="stepTwoFormData.specialProcedureNameSelection">
+                        <el-checkbox class="special-procedure-item" v-for="item in step2.specialProcedureNameList" :key="item.value" :label="item.label" border>
+                        </el-checkbox>
+                      </el-checkbox-group>
+                    </el-form-item>
+                  </el-row>
+                  <el-row class="rows m-t15">
+                    <el-col :span="4" class="text-r" v-text="'特殊程序办理人：'"></el-col>
+                    <el-col :span="8">
+                      <el-form-item :prop="stepTwoFormData.specialTache ? 'specialProcedureManager' : ''">
+                        <el-input :readonly="DETAILS" v-model="stepTwoFormData.specialProcedureManager" placeholder="请输入特殊程序办理人"></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="4" class="text-r" v-text="'特殊程序建议时间：'"></el-col>
+                    <el-col :span="8">
+                      <el-form-item :prop="stepTwoFormData.specialTache ? 'specialProcedureTimer' : ''">
+                        <el-date-picker v-model="stepTwoFormData.specialProcedureTimer" :readonly="DETAILS" type="date" placeholder="选择日期" timestamp></el-date-picker>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'是否收费：'"></el-col>
+            <el-col :span="21">
+              <el-row>
+                <el-col :span="4">
+                  <el-radio :disabled="DETAILS" :label="0" v-model="stepTwoFormData.hasCharge" @change="hasChargeChange" border><span v-text="'否'"></span></el-radio>
+                  <el-radio :disabled="DETAILS" :label="1" v-model="stepTwoFormData.hasCharge" @change="hasChargeChange" border><span v-text="'是'"></span></el-radio>
+                </el-col>
+                <el-col :span="20" v-show="stepTwoFormData.hasCharge === 1">
+                  <el-col :span="4" class="text-r" v-text="'收费标准：'"></el-col>
+                  <el-col :span="8">
+                    <el-form-item :required="stepTwoFormData.hasCharge === 1">
+                      <el-input :readonly="DETAILS" v-model="stepTwoFormData.chargeStandard" placeholder="请输入收费标准"></el-input>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="4" class="text-r" v-text="'收费依据：'"></el-col>
+                  <el-col :span="8">
+                    <el-form-item :required="stepTwoFormData.hasCharge === 1">
+                      <el-input :readonly="DETAILS" v-model="stepTwoFormData.chargeBasis" placeholder="请输入收费依据"></el-input>
+                    </el-form-item>
+                  </el-col>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'办件类型：'"></el-col>
+            <el-col :span="21" class="lineH1">
+              <el-radio-group :disabled="DETAILS" v-model="stepTwoFormData.certificateTypeSelection">
+                <el-radio :label="item.value" v-for="(item, index) in step2.certificateTypeList" border>
+                  <span v-text="item.label"></span>
+                </el-radio>
+              </el-radio-group>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'法定办结时限：'"></el-col>
+            <el-col :span="9">
+              <el-col :span="12">
+                <el-input-number :disabled="DETAILS" v-model="stepTwoFormData.statutoryDeadlines" :min="1" :max="31"></el-input-number>
+              </el-col>
+              <el-col :span="12">
+                <el-select :disabled="DETAILS" v-model="stepTwoFormData.statutoryDeadlinesUnitSelection" placeholder="请选择">
+                  <el-option
+                    v-for="item in step2.runningTimeLimitList"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-col>
+            </el-col>
+            <el-col :span="3" class="text-r" v-text="'承诺办结时限：'"></el-col>
+            <el-col :span="9">
+              <el-col :span="12">
+                <el-input-number :disabled="DETAILS" v-model="stepTwoFormData.commitmentDeadlines" :min="1" :max="31"></el-input-number>
+              </el-col>
+              <el-col :span="12">
+                <el-select :disabled="DETAILS" v-model="stepTwoFormData.commitmentDeadlinesUnitSelection" placeholder="请选择">
+                  <el-option
+                    v-for="item in step2.runningTimeLimitList"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-col>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'通办范围：'"></el-col>
+            <el-col :span="21">
+              <el-radio
+              v-model="stepTwoFormData.ScopeOfOperaSelection"
+              v-for="item in step2.scopeOfOperations"
+              :key="item.value"
+              :label="item.value"
+              :disabled="DETAILS"
+              border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'办理形式：'"></el-col>
+            <el-col :span="21">
+              <el-row class="rows-subset">
+                <el-col :span="3">
+                  <el-checkbox :disabled="DETAILS" :label="'窗口办理'" @change="offlineHandlingClear" v-model="stepTwoFormData.offlineHandling" border></el-checkbox>
+                </el-col>
+                <el-col :span="9" v-if="stepTwoFormData.offlineHandling">
+                  <el-form-item :prop="stepTwoFormData.offlineHandling ? 'offlineHandlingContentText' : ''">
+                    <el-input :readonly="DETAILS" v-model="stepTwoFormData.offlineHandlingContentText" placeholder="请输入窗口信息"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row class="rows-subset" v-if="stepTwoFormData.offlineHandling">
+                <el-col :span="3" class="text-r" v-text="'办理地址：'"></el-col>
+                <el-col :span="6">
+                  <el-form-item :prop="stepTwoFormData.offlineHandling ? 'handleTheAddress' : ''">
+                    <el-input :readonly="DETAILS" v-model="stepTwoFormData.handleTheAddress" placeholder="请输入办理地址"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="3" class="text-r" v-text="'办理时间：'"></el-col>
+                <el-col :span="6">
+                  <el-form-item :prop="stepTwoFormData.offlineHandling ? 'handleTheTime' : ''">
+                    <el-date-picker :readonly="DETAILS" v-model="stepTwoFormData.handleTheTime" type="date" placeholder="选择日期" timestamp></el-date-picker>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row class="rows-subset" v-if="stepTwoFormData.offlineHandling">
+                <el-col :span="3" class="text-r" v-text="'交通指引：'"></el-col>
+                <el-col :span="21">
+                  <el-form-item :prop="stepTwoFormData.offlineHandling ? 'trafficGuidance' : ''">
+                    <el-input :readonly="DETAILS" v-model="stepTwoFormData.trafficGuidance" placeholder="请输入交通指引"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row class="rows-subset">
+                <el-col :span="3">
+                  <el-checkbox :disabled="DETAILS" :label="'网上办理'" @change="onlineHandlingClear" v-model="stepTwoFormData.onlineHandling" border></el-checkbox>
+                </el-col>
+                <el-col :span="21" v-if="stepTwoFormData.onlineHandling">
+                  <el-form-item :prop="stepTwoFormData.offlineHandling ? 'onlineHandlingContentText' : ''">
+                    <el-input :readonly="DETAILS" placeholder="请输入网上链接" v-model="stepTwoFormData.onlineHandlingContentText"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-row class="rows-subset">
+                <el-col :span="3">
+                  <el-checkbox :disabled="DETAILS" :label="'电话办理'" @change="telephoneHandlingClear" v-model="stepTwoFormData.telephoneHandling" border></el-checkbox>
+                </el-col>
+                <el-col :span="21" v-if="stepTwoFormData.telephoneHandling">
+                  <el-form-item :prop="stepTwoFormData.offlineHandling ? 'telephoneHandlingContentText' : ''">
+                    <el-input :readonly="DETAILS" v-model="stepTwoFormData.telephoneHandlingContentText" placeholder="请输入办理部门及详细电话"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'运行系统：'"></el-col>
+            <el-col :span="21">
+              <el-radio
+                v-model="stepTwoFormData.runningSystemSelection"
+                v-for="item in step2.runningSystemList"
+                :key="item.value"
+                :label="item.value"
+                :disabled="DETAILS"
+                border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'数量限制：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="quantitativeRestriction">
+                <el-input :readonly="DETAILS" v-model="stepTwoFormData.quantitativeRestriction" placeholder="若有数量限制的，请输入限制条件与具体数量、具体的限制方式；如无数量限制的，请填写“无”。"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'结果名称：'"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="resultName">
+                <el-input :readonly="DETAILS" v-model="stepTwoFormData.resultName" placeholder="请输入事项申请同意后形成的审批证件或批文、批复的名称和内容；如无结果名称，请填写“无”。"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'结果样本：'"></el-col>
+            <el-col :span="DETAILS ? 21 : 18">
+              <div :class="{'upload-list-box': stepTwoFormData.resultSampleFlieList}">
+                <el-tag style="margin: 3px 5px 0px 5px;" v-for="(item, index) in stepTwoFormData.resultSampleFlieList" @close="deleteresultSampleFlieList(item, index)" :closable="!DETAILS">
+                  <span v-text="item.name"></span>
+                </el-tag>
+                <el-tag style="margin: 3px 5px 0px 5px;" v-if="!stepTwoFormData.resultSampleFlieList.length"><span v-text="'无数据'"></span></el-tag>
+              </div>
+            </el-col>
+            <el-col v-if="!DETAILS" :span="3">
+              <el-button v-if="!DETAILS" type="primary" icon="el-icon-upload" class="special-btn" @click="uploadDialogOpen('#', stepTwoFormData.resultSampleFlieList, 4)">
+                <span v-text="'上传附件'"></span>
+              </el-button>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+      <!-- 步骤条 side2 end -->
+      <!-- 步骤条 side3 start -->
+      <div class="step" v-show="stepActive === 2">
+        <el-form :model="stepThreeFormData" :rules="DETAILS ? '' : rulesOfStepThree" status-icon ref="stepThreeFormData">
+          <el-row class="rows title" v-text="'申请材料'"></el-row>
+          <el-row class="rows">
+            <el-button v-if="!DETAILS" @click="addTableData" type="success" size="small" icon="el-icon-plus" class="add-btn">
+              <span v-text="'新增'"></span>
+            </el-button>
+          </el-row>
+          <el-row class="rows">
+            <el-table
+              ref="singleTable"
+              :data="stepThreeFormData.applicationMaterials"
+              style="width: 100%"
+              border
+            >
+              <el-table-column
+                type="index"
+                width="50"
+                label="序号"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                property="materialName"
+                label="材料名称"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                label="材料规格"
+                width="120"
+                align="center">
+                <template slot-scope="scope">
+                  {{ step3.materialSpecification[scope.row.materialSpecification].label }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                property="numberOfOriginalParts"
+                label="原件份数"
+                width="120"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                property="copyNumber"
+                label="复印件份数"
+                width="120"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                label="操作"
+                align="center">
+                <template slot-scope="scope">
+                  <el-button
+                    size="mini"
+                    type="success"
+                    icon="el-icon-warning"
+                    @click="materialDetails(scope.$index, scope.row)" v-text="'详情'"></el-button>
+                  <el-button
+                    size="mini"
+                    type="success"
+                    icon="el-icon-edit-outline"
+                    @click="materialEdit(scope.$index, scope.row)" v-text="'编辑'"></el-button>
+                  <el-button
+                    size="mini"
+                    type="danger"
+                    icon="el-icon-delete"
+                    @click="materialDelete(scope.$index, scope.row)" v-text="'删除'"></el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-row>
+          <el-row class="rows title" v-text="'申请人权利和义务'"></el-row>
+          <el-row class="rows">
+            <el-col :span="4" class="text-r" v-text="'申请人依法享有的权力：'"></el-col>
+            <el-col :span="20">
+              <el-form-item prop="applicantRights">
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 4, maxRows: 4}"
+                  :maxlength="200"
+                  placeholder="请输入申请人依法享有的权利"
+                  v-model="stepThreeFormData.applicantRights"
+                  resize="none"
+                  :readonly="DETAILS">
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="4" class="text-r" v-text="'申请人依法履行的义务：'"></el-col>
+            <el-col :span="20">
+              <el-form-item prop="applicantObligation">
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 4, maxRows: 4}"
+                  :maxlength="200"
+                  placeholder="请输入申请人依法履行的义务"
+                  v-model="stepThreeFormData.applicantObligation"
+                  resize="none"
+                  :readonly="DETAILS"
+                  >
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows title" v-text="'法律救济'"></el-row>
+          <el-row class="rows">
+            <el-row class="rows-subset" v-text="'行政复议'"></el-row>
+            <el-row class="rows-subset">
+              <el-col :span="2" v-text="'部门：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="ARdepartment">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.ARdepartment" placeholder="请填写行政复议部门"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="2" v-text="'地址：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="ARaddress">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.ARaddress" placeholder="请填写行政复议地址"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row class="rows-subset">
+              <el-col :span="2" v-text="'电话：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="ARtelephone">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.ARtelephone" placeholder="请填写行政复议电话"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="2" v-text="'网址：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="ARwebsite">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.ARwebsite" placeholder="请填写行政复议网址"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-row>
+          <el-row class="rows">
+            <el-row class="rows-subset" v-text="'行政诉讼'"></el-row>
+            <el-row class="rows-subset">
+              <el-col :span="2" v-text="'部门：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="APdepartment">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.APdepartment" placeholder="请填写行政诉讼部门"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="2" v-text="'地址：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="APaddress">
+                  <el-input v-model="stepThreeFormData.APaddress" placeholder="请填写行政诉讼地址"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row class="rows-subset">
+              <el-col :span="2" v-text="'电话：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="APtelephone">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.APtelephone" placeholder="请填写行政诉讼电话"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="2" v-text="'网址：'" class="text-r"></el-col>
+              <el-col :span="10">
+                <el-form-item prop="APwebsite">
+                  <el-input :readonly="DETAILS" v-model="stepThreeFormData.APwebsite" placeholder="请填写行政诉讼网址"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-row>
+        </el-form>
+      </div>
+      <!-- 步骤条 side3 end -->
+      <!-- 步骤条 side4 start -->
+      <div class="step" v-show="stepActive === 3">
+        <el-form :model="stepFourFormData" :rules="DETAILS ? '' : rulesOfStepFour" status-icon ref="stepFourFormData">
+          <el-row class="rows title" v-text="'中介服务'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'是否存在中介服务：'"></el-col>
+            <el-col :span="4">
+              <el-radio :disabled="DETAILS" @change="hasIntermediaryServicesSelectionClear" v-model="stepFourFormData.hasIntermediaryServicesSelection" v-for="item in step4Select" :key="item.value" :label="item.value" border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+            <el-col :span="17" v-if="stepFourFormData.hasIntermediaryServicesSelection === 0">
+              <el-row>
+                <el-col :span="3" class="text-r" v-text="'中介名称：'"></el-col>
+                <el-col :span="9">
+                  <el-form-item :prop="stepFourFormData.hasIntermediaryServicesSelection === 0 ? 'intermediaryChineseName' : '' ">
+                    <el-input :readonly="DETAILS" v-model="stepFourFormData.intermediaryChineseName" placeholder="请输入中介中文全名"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="3" class="text-r" v-text="'服务内容：'"></el-col>
+                <el-col :span="9">
+                  <el-form-item :prop="stepFourFormData.hasIntermediaryServicesSelection === 0 ? 'intermediaryServiceContent' : '' ">
+                    <el-input :readonly="DETAILS" v-model="stepFourFormData.intermediaryServiceContent" placeholder="请输入中介服务内容"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'是否收费：'"></el-col>
+            <el-col :span="4">
+              <el-radio :disabled="DETAILS" v-model="stepFourFormData.hasCharge" @change="hasChargeClear" v-for="item in step4Select" :key="item.value" :label="item.value" border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+            <el-col :span="17" v-if="stepFourFormData.hasCharge === 0">
+              <el-row>
+                <el-col :span="3" class="text-r" v-text="'收费标准：'"></el-col>
+                <el-col :span="9">
+                  <el-form-item :prop="stepFourFormData.hasCharge === 0 ? 'intermediaryChargeStandard' : ''">
+                    <el-input :readonly="DETAILS" v-model="stepFourFormData.intermediaryChargeStandard" placeholder="请输入中介收费标准"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="3" class="text-r" v-text="'收费金额：'"></el-col>
+                <el-col :span="9">
+                  <el-form-item :prop="stepFourFormData.hasCharge === 0 ? 'intermediaryChargeAmount' : ''">
+                    <el-input :readonly="DETAILS" v-model="stepFourFormData.intermediaryChargeAmount" placeholder="请输入金额 单位:元"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
+          <el-row class="rows title" v-text="'创新服务'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" v-text="'预约办理：'" class="text-r"></el-col>
+            <el-col :span="4">
+              <el-radio :disabled="DETAILS" v-model="stepFourFormData.serviceReservation" @change="serviceReservationClear" v-for="item in step4Select" :key="item.value" :label="item.value" border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+            <el-col v-if="stepFourFormData.serviceReservation === 0" :span="3" v-text="'网址：'" class="text-r"></el-col>
+            <el-col v-if="stepFourFormData.serviceReservation === 0" :span="6">
+              <el-form-item prop="onlineBookingAddress">
+                <el-input :readonly="DETAILS" placeholder="请输入网上预约链接地址" v-model="stepFourFormData.onlineBookingAddress"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" v-text="'网上支付：'" class="text-r"></el-col>
+            <el-col :span="4">
+              <el-radio :disabled="DETAILS" @change="serviceOnlinePaymentClear" v-model="stepFourFormData.serviceOnlinePayment" v-for="item in step4Select" :key="item.value" :label="item.value" border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+            <el-col v-if="stepFourFormData.serviceOnlinePayment === 0" :span="3" v-text="'支付方式：'" class="text-r"></el-col>
+            <el-col v-if="stepFourFormData.serviceOnlinePayment === 0" :span="6">
+              <el-form-item prop="payWaySelection">
+                <el-select :disabled="DETAILS" v-model="stepFourFormData.payWaySelection">
+                  <el-option
+                    v-for="item in PayWayList"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows">
+            <el-col :span="3" v-text="'物流快递：'" class="text-r"></el-col>
+            <el-col :span="4">
+              <el-radio :disabled="DETAILS" @change="serviceLogisticsClear" v-model="stepFourFormData.serviceLogistics" v-for="item in step4Select" :key="item.value" :label="item.value" border>
+                <span v-text="item.label"></span>
+              </el-radio>
+            </el-col>
+            <el-col v-if="stepFourFormData.serviceLogistics === 0" :span="3" v-text="'快递选择：'" class="text-r"></el-col>
+            <el-col v-if="stepFourFormData.serviceLogistics === 0" :span="6">
+              <el-form-item prop="logisticSelection">
+                <el-select :disabled="DETAILS" v-model="stepFourFormData.logisticSelection">
+                  <el-option
+                    v-for="item in LogisticsList"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows title" v-text="'咨询和投诉'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" class="text-r" v-text="'咨询电话：'"></el-col>
+            <el-col :span="9">
+              <el-form-item prop="consultingPhone">
+                <el-input :readonly="DETAILS" v-model="stepFourFormData.consultingPhone"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="3" class="text-r" v-text="'监督电话：'"></el-col>
+            <el-col :span="9">
+              <el-form-item prop="complaintTelephone">
+                <el-input :readonly="DETAILS" v-model="stepFourFormData.complaintTelephone"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="rows title" v-text="'常见问题'"></el-row>
+          <el-row class="rows">
+            <el-col :span="3" v-text="'常见问题：'" class="text-r"></el-col>
+            <el-col :span="21">
+              <el-form-item prop="commonProblem">
+                <el-input
+                  type="textarea"
+                  :autosize="{ minRows: 4, maxRows: 4}"
+                  :maxlength="200"
+                  placeholder="请输入常见问题的内容，如无常见问题也要填写“无”"
+                  v-model="stepFourFormData.commonProblem"
+                  resize="none"
+                  :readonly="DETAILS"
+                >
+                </el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+      <!-- 步骤条 side4 end -->
+      <!-- 步骤条 Footer start -->
+      <div class="step-footer">
+        <el-row class="rows footer-btn-group">
+          <el-col :span="24" class="lineH1 text-c">
+            <el-button-group>
+              <el-button type="primary" v-if="!DETAILS" @click="resetStep" icon="el-icon-refresh" size="medium" plain><span v-text="'重置'"></span></el-button>
+              <el-button type="primary" @click="prveStep" icon="el-icon-d-arrow-left" size="medium" plain><span v-text="'上一步'"></span></el-button>
+              <el-button type="primary" v-if="stepActive === 3" @click="nextStep(true)" size="medium" plain><i :class="'el-icon-success'"></i><span v-text="'完成'"></span></el-button>
+              <el-button type="primary" v-else @click="nextStep" size="medium" plain><span v-text="'下一步'"></span><i :class="'el-icon-d-arrow-right'"></i></el-button>
+              <el-button type="primary" v-if="!DETAILS" @click="cancelStep" icon="el-icon-circle-close" size="medium" plain><span v-text="'取消'"></span></el-button>
+            </el-button-group>
+          </el-col>
+        </el-row>
+      </div>
+      <!-- 步骤条 Footer end -->
+    </div>
+    <!-- 文件上传弹窗 开始 -->
+    <el-dialog
+      ref="uploadDialog"
+      :title="uploadDialog.title"
+      :visible="uploadDialog.visible"
+      @close="uploadDialogClose"
+      :lock-scroll="false"
+      center
+      width="600px">
+      <el-upload
+        class="upload-file-box"
+        drag
+        :action="uploadDialog.action"
+        :file-list="uploadDialog.fileList"
+        :on-remove="uploadOnRemove"
+        :on-success="uploadOnSuccess"
+        :on-error="uploadOnError"
+        :before-remove="uploadBeforeRemove"
+        :limit="10"
+        show-file-list
+        multiple
+        accept=".jpg, .gif, .png, .zip, .rar, .pdf, .xls, .doc, .slsx, .docx, .ppt, .pptx"
+        >
+        <i :class="'el-icon-upload'"></i>
+        <div class="el-upload__text"><span v-text="'将文件拖到此处，或'"></span><em v-text="'点击上传'"></em></div>
+        <div class="el-upload__tip" slot="tip" v-text="photoUpdateTypeTips"></div>
+      </el-upload>
+    </el-dialog>
+    <!-- 文件上传弹窗 结束 -->
+    <el-dialog
+      ref="step3TableDialog"
+      :title="tableDialog.title"
+      :visible="tableDialog.visible"
+      @close="tableDialogClose"
+      center
+      :lock-scroll="false"
+      width="50%">
+      <el-form :model="tableFormData" :rules="rulesOfTableDialog" status-icon ref="tableFormData">
+        <el-row class="rows-subset">
+          <el-col :span="3" v-text="'材料名称'" class="text-c"></el-col>
+          <el-col :span="9">
+            <el-form-item prop="materialName">
+              <el-input :readonly="tableDialog.details" v-model="tableFormData.materialName"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="3" v-text="'材料序号'" class="text-c"></el-col>
+          <el-col :span="9">
+            <el-form-item prop="materialSequenceNumber">
+              <el-input :readonly="tableDialog.details" v-model="tableFormData.materialSequenceNumber"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row class="rows-subset">
+          <el-col :span="3" v-text="'材料规格'" class="text-c"></el-col>
+          <el-col :span="9" v-if="tableDialog.details">
+            <el-input :readonly="tableDialog.details" :value="step3.materialSpecification[tableFormData.materialSpecification].label"></el-input>
+          </el-col>
+          <el-col :span="9" v-else>
+            <el-select v-model="tableFormData.materialSpecification">
+              <el-option
+                v-for="item in step3.materialSpecification"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-col>
+          <el-col :span="3" v-text="'原件份数'" class="text-c"></el-col>
+          <el-col :span="9">
+            <el-form-item prop="numberOfOriginalParts">
+              <el-input-number v-if="!tableDialog.details" v-model="tableFormData.numberOfOriginalParts" :min="0" :max="30"></el-input-number>
+              <el-input v-else :readonly="tableDialog.details" type="number" v-model="tableFormData.numberOfOriginalParts"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row class="rows-subset">
+          <el-col :span="3" v-text="'复印件份数'" class="text-c"></el-col>
+          <el-col :span="9">
+            <el-form-item prop="copyNumber">
+              <el-input-number v-if="!tableDialog.details" v-model="tableFormData.copyNumber" :min="0" :max="30"></el-input-number>
+              <el-input v-else :readonly="tableDialog.details" type="number" v-model="tableFormData.copyNumber"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="3" v-text="'来源渠道'" class="text-c"></el-col>
+          <el-col :span="9">
+            <el-form-item prop="sourceChannel">
+              <el-input :readonly="tableDialog.details" v-model="tableFormData.sourceChannel"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row class="rows-subset">
+          <el-col :span="3" v-text="'材料样本'" class="text-c"></el-col>
+          <el-col :span="tableDialog.details ? 21 : 16">
+            <el-tag class="m-r10" v-for="(item, index) in tableFormData.materialSample" @close="deleteMaterialSample(item, index)" :closable="!tableDialog.details || DETAILS ? true : false">
+              <span v-text="item.name"></span>
+            </el-tag>
+            <el-tag class="m-r10" v-if="!tableFormData.materialSample.length"><span v-text="'无数据'"></span></el-tag>
+          </el-col>
+          <el-col :span="5" v-if="!tableDialog.details">
+            <el-button type="primary" icon="el-icon-upload" class="special-btn" @click="uploadDialogOpen('#', tableFormData.materialSample, 0)"><span v-text="'上传附件'"></span></el-button>
+          </el-col>
+        </el-row>
+        <el-row class="rows-subset">
+          <el-col :span="3" v-text="'示范文本'" class="text-c"></el-col>
+          <el-col :span="tableDialog.details ? 21 : 16">
+            <el-tag class="m-r10" v-for="(item, index) in tableFormData.demonstrationText" :key="index" @close="deleteDemonstrationText(item, index)" :closable="!tableDialog.details">
+              <span v-text="item.name"></span>
+            </el-tag>
+            <el-tag class="m-r10" v-if="!tableFormData.demonstrationText.length"><span v-text="'无数据'"></span></el-tag>
+          </el-col>
+          <el-col :span="5" v-if="!tableDialog.details">
+            <el-button type="primary" icon="el-icon-upload" class="special-btn" @click="uploadDialogOpen('#', tableFormData.demonstrationText, 1)"><span v-text="'上传附件'"></span></el-button>
+          </el-col>
+        </el-row>
+        <el-row class="rows-subset">
+          <el-col :span="3" v-text="'填报须知'" class="text-c"></el-col>
+          <el-col :span="21">
+            <el-form-item prop="notificationOfNotes">
+              <el-input :readonly="tableDialog.details" v-model="tableFormData.notificationOfNotes"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="tableDialogClose" v-text="'取 消'"></el-button>
+        <el-button type="primary" @click="tableDialogSubmit" v-text="'确 定'"></el-button>
+      </span>
+    </el-dialog>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../js/util/administrativelicensing/stepDetils.js"></script>
+  <script src="../../../js/util/administrativelicensing/stepCommon.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/administrativeLicensing/index.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [stepCommon, stepDetils],
+      data: function () {
+        return {
+          searchData: {
+            text: '', // 搜索框内容
+            options: [], // 搜索条件
+            searchOptionSelection: '' // 选中值
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          mainDialog: {
+            title: '',
+            dialogVisiable: false,
+            contentText: '',
+            data: {},
+          },
+          administrativeLicensingTableData: [], // 表格完整数据
+          mainVisible: true,
+          DETAILS: false,
+          mainTableSelection: []
+        }
+      },
+      mounted: function () {
+        this.getSearchOptions()
+        this.getMainTableData()
+      },
+      methods: {
+        // 分页 当前页条数切换
+        handleSizeChange: function (val) {
+          console.log(val)
+        },
+        // 分页页码切换
+        handleCurrentChange: function (val) {
+          console.log(val)
+        },
+        // 获取搜索选项
+        getSearchOptions: function () {
+          var self = this;
+          api({
+            url: '/administrativeLicening/searchOption',
+            method: 'get',
+            successFuc: function (res) {
+              self.searchData.options = res.data
+            }
+          })
+        },
+        // 获取表格数据
+        getMainTableData: function () {
+          var self = this;
+          api({
+            url: '/administrativeLicening/tableDataList',
+            method: 'get',
+            successFuc: function (res) {
+              console.log(res)
+              self.administrativeLicensingTableData = res.data
+            }
+          })
+        },
+        // 表格左侧多选
+        tableSelectionChange: function (val) {
+          var SelectionList = []
+          val.forEach(function(item) {
+            SelectionList.push(item.id)
+          })
+          console.log('表格选中:', SelectionList)
+          this.mainTableSelection = SelectionList
+        },
+        // 主页搜索
+        mainSearch: function () {
+          var contentText = this.searchData.text;
+          var searchType = this.searchData.searchOptionSelection;
+          var searchData = {
+            page: this.pagination.page,
+            limit: this.pagination.limit,
+            text: this.searchData.text,
+            searchOption: this.searchData.searchOptionSelection
+          }
+          console.log(searchData)
+        },
+        // 表格内提交
+        operationSubmit: function (index, row) {
+          var self = this;
+          this.$confirm('你确定要提交该项吗？', '', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+          }).then(function () {
+            console.log('提交: ', row)
+            self.$message({
+              type: 'success',
+              message: '提交成功!'
+            });
+          }).catch(function () {
+            self.$message({
+              type: 'info',
+              message: '取消提交'
+            });
+          });
+        },
+        // 表格=>步骤条 遍历赋值
+        tableAssignment: function (val, row) {
+          if (isArray(val)) {
+            for (var item of val) {
+              item.id = item.id
+              for (var key in item) {
+                item[key] = row[key]
+              }
+            }
+          }else if (isObject(val)) {
+            for (var key in val) {
+              val.id = item.id
+              val[key] = row[key]
+            }
+          }
+        },
+        // 表格=>步骤条 遍历清空
+        tableClearData: function (data, dataOrigin) {
+          var dataOrigin = $.extend(true, dataOrigin, {})
+          if (isArray(data)) {
+            for (var item of data) {
+              item.id = item.id
+              for (var key in item) {
+                console.log(item[key], dataOrigin[key], key)
+                item[key] = dataOrigin[key]
+              }
+            }
+          }else if (isObject(data)) {
+            for (var key in data) {
+              data.id = item.id
+              data[key] = dataOrigin[key]
+            }
+          }
+        },
+        // 查看表格详情
+        operationDetails: function (index, row) {
+          this.openSteps('详情')
+          this.tableAssignment([this.stepOneFormData, this.stepTwoFormData, this.stepThreeFormData, this.stepFourFormData], row)
+          console.log('详情:', row.id)
+          this.DETAILS = true
+        },
+        // 表格下载按钮功能
+        operationDownload: function (index, row) {
+          this.$confirm('你确定要下载该条数据吗？', '', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+          }).then(function () {
+            console.log('下载: ', row.id)
+            self.$message({
+              type: 'success',
+              message: '开始下载!'
+            });
+          }).catch(function () {
+
+          })
+        },
+        // 编辑表格条目
+        operationEdit: function (index, row) {
+          this.openSteps('编辑')
+          this.tableAssignment([this.stepOneFormData, this.stepTwoFormData, this.stepThreeFormData, this.stepFourFormData], row)
+          this.DETAILS = false
+          console.log('编辑:', row.id);
+        },
+        // 表格删除与页面批量删除
+        operationDelete: function (index, row) {
+          var self = this;
+          if (self.mainTableSelection.length <= 0) {
+            this.$message({
+              message: '未选择不能批量删除,请选择后操作',
+              type: 'warning'
+            })
+            return
+          }
+          if (index === '批量删除') {
+            this.$confirm('此操作将永久删除选中项目, 是否继续?', '', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+            }).then(function () {
+              console.log('批量删除: ', self.mainTableSelection)
+              self.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+            }).catch(function () {
+              self.$message({
+                type: 'info',
+                message: '已取消删除'
+              });
+            });
+          } else {
+            this.$confirm('此操作将永久删除选中项目, 是否继续?', '', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+            }).then(function () {
+              console.log('删除: ', row.id)
+              self.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+            }).catch(function () {
+              self.$message({
+                type: 'info',
+                message: '已取消删除'
+              });
+            });
+          }
+        },
+        // 触发新增
+        openSteps: function (val) {
+          if(val === '新增') {
+            this.stepOneFormData.matterCode = this.step1.matterList[0].matterCode
+            this.stepOneFormData.matterType = this.step1.matterList[0].matterType
+          }
+          this.mainVisible = false;
+        },
+        closeSteps: function () {
+          var self = this;
+          self.resetStep('all')
+          this.tableClearData([this.stepOneFormData, this.stepTwoFormData, this.stepThreeFormData, this.stepFourFormData], this.originalData)
+          self.mainVisible = true;
+          self.stepActive = 0;
+          self.DETAILS = false;
+        }
+      },
+    })
+  </script>
+</body>
+</html>

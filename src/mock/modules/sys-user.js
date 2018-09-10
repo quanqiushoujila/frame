@@ -8,7 +8,7 @@ for (let i = 0; i < Math.floor(Math.random() * 10 + 1); i++) {
     'username': '@name',
     'email': '@email',
     'roleId': 1,
-    'roleIdForShow': '姓名',
+    // 'roleIdForShow': '姓名',
     'deptName': 1,
     'deptNameForShow': '姓名1',
     'realname': Mock.Random.word(),

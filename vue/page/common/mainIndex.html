@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/common/mainIndex.css">
+  <title>主页</title>
+</head>
+<body>
+  <div id="app">
+    <div class="main-index main-container"
+      v-loading.fullscreen.lock="fullscreenLoading"
+      :element-loading-background="loadingBackground">
+      <div class="main-wrapper">
+        <h1 class="main-logo login-logo">
+          <img src="../../img/logo-login.png" alt="logo">
+        </h1>
+        <div class="main-slogan">
+          <h2>
+            <span>为数据管理赋权</span><span>数据应用赋能</span><span>数据资产赋值</span>
+          </h2>
+          <p>规范编辑  智能管理  关联应用  共享开放</p>
+        </div>
+        <div class="main-index-content">
+          <ul class="clearfix">
+            <li v-for="item in menuIndexList" :key="item.id" class="pull-left nav-item">
+              <a :href="item.path">
+                <i class="iconfont" :class="item.remarks"></i>
+                <span v-text="item.name"></span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/lib/jquery.min.js"></script>
+  <script src="../../js/lib/vue.min.js"></script>
+  <script src="../../js/lib/element-ui/index.js"></script>
+  <script src="../../js/util/index.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../js/lib/mock.js"></script>
+  <script src="../../mock/index.js"></script>
+  <script src="../../mock/common/nav.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data: function() {
+        return {
+          menuIndexList: [],
+          fullscreenLoading: false,
+          loadingBackground: 'rgba(0, 0, 0, 0.5)',
+        }
+      },
+      created: function() {
+        this.init()
+      },
+      methods: {
+        init: function() {
+          this.getMenu()
+        },
+        getMenu: function() {
+          var self = this
+          this.fullscreenLoading = true
+          api({
+            url: '/nav',
+            type: 'get',
+            successFuc: function (res) {
+              self.menuIndexList = res.data
+              self.fullscreenLoading = false
+            },
+            failFuc: function (res) {
+              self.fullscreenLoading = false
+              alert('获取失败')
+            },
+            errorFuc: function (res) {
+              self.fullscreenLoading = false
+              alert('获取失败')
+            },
+          })
+        }
+      }
+    })
+  </script>
+</body>
+</html>

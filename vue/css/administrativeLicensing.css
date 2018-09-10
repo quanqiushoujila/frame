@@ -1,0 +1,101 @@
+.el-input.el-input--suffix .el-input__inner {
+	text-align: center;
+}
+.container {
+	padding: 10px;
+}
+#administrativeLicensingTable {
+	padding: 30px 0px 0px 0px;
+}
+.mainDialogContent {
+	display: block;
+	margin: 0 auto;
+	text-align: center;
+	width: 80%;
+	height: 100%;
+	color: #FF0036;
+	font-weight: 700;
+}
+.step {
+	width: 1100px;
+	margin: 0 auto;
+}
+.el-select {
+	display: block;
+}
+.el-input-number {
+	width: 100%;
+}
+.rows {
+	padding: 5px 0px;
+}
+.rows.title {
+	font-size: 1.1rem;
+	text-align: center;
+	font-weight: bold;
+	color: #333333;
+}
+.rows-subset {
+	padding: 0px 0px 10px 0px;
+}
+.text-r {
+	text-align: right;
+	line-height: 40px;
+	font-size: 0.85rem;
+}
+.text-c {
+	text-align: center;
+	line-height: 40px;
+}
+.step-header, .step-footer {
+	width: 1200px;
+	height: 70px;
+	margin: 0 auto;
+}
+.m-r10 {
+	margin-right: 10px;
+}
+.step-header .lside {
+	width: 80%;
+	float: left;
+}
+.step-header .rside {
+	width: 20%;
+	float: left;
+	text-align: right;
+}
+.step-header .rside .btn {
+	font-size: 0.95rem;
+	padding-right: 0px;
+}
+.lineH1 {
+	line-height: 1
+}
+
+.upload-list-box {
+	position: relative;
+	height: 38px;
+	width: calc(100% - 20px);
+	border-radius: 5px;
+	border: 1px #409EFF dotted;
+}
+.special-btn {
+	width: 100%;
+}
+.special-box-s1 {
+	padding: 10px;
+	border: 1px #409EFF solid;
+	border-radius: 5px;
+	font-size: 0.9rem;
+}
+.special-box-s1 .title {
+	font-size: 0.85rem;
+}
+.special-procedure-item {
+	margin: 10px 10px 0px 10px;
+}
+.upload-file-box {
+	width: 80%;
+	margin: 0 auto;
+	text-align: center;
+}

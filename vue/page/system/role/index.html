@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../../css/common.css">
+  <title>角色管理</title>
+</head>
+
+<body>
+  <div id="app" class="container">
+    <div class="header-layout">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-input v-model="searchContent.name" placeholder="请输入角色名称"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="searchHandle" icon="el-icon-search"><span v-text="'搜索'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="addHandle" icon="el-icon-plus"><span v-text="'新增'"></span></el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="danger" @click="deleteQueryHandle" icon="el-icon-delete"><span v-text="'批量删除'"></span></el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="body-layout">
+      <k-table @selection-change-handle="selectionChangeHandle" @size-change-handle="sizeChangeHandle" @current-change-handle="currentChangeHandle"
+        @detail-handle="detailHandle" @edit-handle="editHandle" @delete-handle="deleteHandle" @repeat-password-handle="repeatPasswordHandle"
+        :table="table" />
+    </div>
+    <!-- 新增修改详情 -->
+    <k-dialog ref="roleDialog" :title="title1" :width="width" :is-btn-group="isBtnGroup" @close-dialog-handle="closeDialogHandle"
+      @open-dialog-handle="openDialogHandle" @cancel-handle="cancelHandle" @confirm-handle="confirmHandle">
+      <template v-if="title1 === '详情'">
+        <k-detail ref="roleDetail" :props="props" :data="formData" />
+      </template>
+      <template v-else>
+        <k-form @submit-handle="submitHandle" ref="roleForm" :form="form" :form-props="props" :rules="rules" :data="formData" />
+      </template>
+    </k-dialog>
+  </div>
+  <script src="../../../js/lib/jquery.min.js"></script>
+  <script src="../../../js/lib/vue.min.js"></script>
+  <script src="../../../js/lib/element-ui/index.js"></script>
+  <script src="../../../component/common/index.js"></script>
+  <script src="../../../js/mixin/common.js"></script>
+  <script src="../../../js/util/index.js"></script>
+  <script src="../../../js/icon.js"></script>
+  <script src="../../../js/page/system/role/roleDialog.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../../js/lib/mock.js"></script>
+  <script src="../../../mock/index.js"></script>
+  <script src="../../../mock/system/role.js"></script>
+  <script src="../../../mock/system/menu.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var app = new Vue({
+      el: '#app',
+      mixins: [commonMixin, roleDialog],
+      data: function () {
+        return {
+          width: 'middle',
+          searchContent: {
+            name: ''
+          },
+          table: {
+            loading: false,
+            // table数据
+            data: [],
+            // table 表头
+            tr: [
+              {
+                prop: 'name',
+                label: '角色名称'
+              },
+              {
+                prop: 'remark',
+                label: '描述'
+              }
+            ],
+            hasSelect: true,
+            // 操作
+            operation: {
+              hasOperation: true,
+              label: '操作',
+              width: 190,
+              type: 'text',
+              minWidth: '',
+              // danger-红色 warning-黄色 primary-蓝色 success-绿色 info-灰色 默认-白色
+              data: [{
+                type: '',
+                label: '详情',
+                id: 1,
+                fn: 'detail-handle',
+                permission: 'sys:role:info'
+              }, {
+                type: 'warning',
+                label: '编辑',
+                id: 2,
+                fn: 'edit-handle',
+                permission: 'sys:role:update'
+              }, {
+                type: 'danger',
+                label: '删除',
+                id: 3,
+                fn: 'delete-handle',
+                permission: 'sys:role:delete'
+              }, {
+                type: 'danger',
+                label: '重置密码',
+                id: 3,
+                fn: 'repeat-password-handle',
+                permission: 'sys:role:update'
+              }]
+            },
+            pagination: {
+              hasPagination: true
+            }
+          },
+          pagination: {
+            page: 1,
+            limit: 10
+          },
+          formData: {},
+          title: '',
+        }
+      },
+      created: function () {
+        this.getTableData()
+      },
+      methods: {
+        // 添加操作
+        addHandle: function () {
+          this.resetFormData()
+          this.title1 = CONFIG.ADD
+          this.open('roleDialog')
+        },
+        searchHandle: function () {
+          this.getTableData(this.searchContent)
+        },
+        // 获取table数据
+        getTableData: function (data) {
+          var self = this;
+          var data = $.extend(true, data, this.pagination)
+          console.log(data)
+          this.table.loading = true
+          api({
+            url: '/sys/role/roleList',
+            type: 'get',
+            successFuc: function (res) {
+              if (res.code === CONFIG.SUCCESS) {
+                self.table.data = res.data
+                self.table.pagination.total = res.count
+                self.table.loading = false
+              }
+            }
+          })
+        },
+        // 详情
+        detailHandle: function (index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.DETAIL
+          this.open('roleDialog')
+          console.log('详情', index, row)
+        },
+        // 编辑
+        editHandle: function (index, row) {
+          this.formData = clonedeep(row)
+          this.title1 = CONFIG.EDIT
+          this.open('roleDialog')
+          console.log('编辑', index, row)
+        },
+        // 删除
+        deleteHandle: function (index, row) {
+          this.$confirm('确定要删除吗').then(function () {
+            console.log('删除', index, row)
+          }).catch(function () { })
+        },
+        // 重置密码
+        repeatPasswordHandle: function (index, row) {
+          this.$confirm('重置密码').then(function () {
+            console.log('重置密码', index, row)
+          }).catch(function () { })
+        },
+        // table checkbox选择
+        selectionChangeHandle: function (val) {
+          this.queryData = val
+        },
+        currentChangeHandle: function (val) {
+          this.pagination.page = val
+          this.getTableData(this.pagination)
+          console.log('currentChangeHandle', val)
+        },
+        sizeChangeHandle: function (val) {
+          this.pagination.limit = val
+          this.getTableData(this.pagination)
+          console.log('sizeChangeHandle', val)
+        },
+        // 初始化数据
+        resetFormData: function () {
+          this.formData = resetObject(this.formData)
+        }
+      }
+    })
+  </script>
+</body>
+
+</html>

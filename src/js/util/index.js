@@ -2,6 +2,7 @@ import isArray from 'lodash/isArray'
 import isPlainObject from 'lodash/isPlainObject'
 import clonedeep from 'lodash/clonedeep'
 import $http from 'js/util/httpRequest'
+import { getSession } from 'js/util/session'
 /**
  * 初始化数据
  */
@@ -123,4 +124,53 @@ export function request ({url, method = 'post', data = {}, contentType = 'json',
       resolve(data)
     })
   })
+}
+
+export function getSessionDicName ({data, dicName, value, empty}) {
+  const dicData = data[dicName] || getSession('dicList')[dicName]
+  let currentName = empty || ''
+  for (let i = 0, len = dicData.length; i < len; i++) {
+    if (+dicData[i].value === +value) {
+      currentName = dicData[i].name
+      break
+    }
+  }
+  return currentName
+}
+
+// 获取数据字典对应数据
+export function getRealData ({data, name, dicName, forName = 'ForShow', empty}) {
+  const dicData = getSession('dicList')
+  for (let i = 0, len = data.length; i < len; i++) {
+    data[i][`${name}${forName}`] = getSessionDicName({data: dicData, dicName: dicName, value: data[i][name], forName: forName})
+  }
+  return data
+}
+// 获取数据字典对应数据
+export function getSessionDicData (name) {
+  return JSON.parse(getSession('dicList'))[name]
+}
+
+export function getCurrentMenu (name) {
+  let menu = getSession('menuList')
+  let currentMenu
+  for (let i = 0, len = menu.length; i < len; i++) {
+    s(name, menu[i], false, currentMenu)
+  }
+  console.log(currentMenu)
+  function s (name, data, status, currentMenu) {
+    for (let i = 0, len = data.length; i < len; i++) {
+      console.log(data[i].filename, name)
+      if (data[i].filename === name) {
+        console.log(11, data[i].filename)
+        currentMenu = data[i]
+        break
+      } else {
+        if (status) break
+        if (data[i].children && data[i].children.length > 0) {
+          s(name, data[i].children)
+        }
+      }
+    }
+  }
 }

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../../js/lib/element-ui/index.css">
+  <link rel="stylesheet" href="../../css/common.css">
+  <title></title>
+</head>
+<body>
+  <div id="app" v-loading.fullscreen.lock="fullscreenLoading">
+    <!-- 头部 -->
+    <div class="main-header" :class="{'mini-show': sidebarFold}">
+      <h1 class="logo-wrapper pull-left">
+        <a href="./mainIndex.html" class="logo-brand-lg">
+          <img src="../../img/logo.png" alt="logo">
+          <span v-text="'数据基因'"></span>
+        </a>
+        <a href="./mainIndex.html" class="logo-brand-mini">
+          <img src="../../img/logo.png" alt="logo">
+        </a>
+      </h1>
+      <div class="header-body">
+        <div class="menu-bar" @click="sidebarFold = !sidebarFold">
+          <i class="iconfont" :class="menuIcon"></i>
+        </div>
+        <ul class="header-nav pull-right">
+          <li class="item avatar pull-left">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                <span class="avatar-img"><img src="../../img/logo1.png" alt="avatar"></span>
+                <span class="name" v-text="username"></span>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>
+                  <a href="" v-text="'修改密码'"></a>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </li>
+          <li class="item pull-left count">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                <el-badge :value="infoData.all" class="item-badge">
+                  <i class="iconfont icon-youjian3"></i>
+                </el-badge>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>
+                  <a href="#">
+                    <span v-text="'目录共'"></span><span class="red" v-text="infoData.count"></span><span v-text="'条代办'"></span>
+                  </a>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </li>
+          <li class="item pull-left">
+            <i class="iconfont icon-shezhi1"></i>
+          </li>
+          <li class="item pull-left" @click="logout">
+            <i class="iconfont icon-icon1"></i>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- 头部 -->
+    <!-- 菜单 -->
+    <aside class="main-nav" :class="{'mini-show': sidebarFold}">
+      <template v-if="!sidebarFold">
+        <el-menu :default-active="defaultActive">
+          <sub-menu
+            v-for="menu in menuList"
+            :key="menu.id"
+            :menu="menu"
+            @current-menu="currentMenu">
+          </sub-menu>
+        </el-menu>
+      </template>
+      <template v-else>
+        <nav class="mini-nav-wrapper">
+          <a :href="item.path" :key="item.id" v-for="item in mainIndexList">
+            <i class="iconfont" :class="item.remarks"></i>
+          </a>
+        </nav>
+      </template>
+    </aside>
+    <!-- 菜单 -->
+    <!-- 主体 -->
+    <div class="main-content" :class="{'mini-show': sidebarFold}">
+      <div class="main-wrapper" :class="{'has-tab': tabList.length > 0}">
+        <el-tabs
+          v-show="tabList.length > 0"
+          v-model="mainTabsActiveName"
+          :closable="true"
+          type="card"
+          class="main-tab"
+          @tab-click="selectedTabHandle"
+          @tab-remove="removeTabHandle">
+          <el-tab-pane
+            :key="item.id"
+            v-for="item in tabList"
+            :label="item.name"
+            :name="item.id"
+          >
+            <el-card class="box-card">
+              <iframe :src="item.path" width="100%" height="100%" frameborder="0" scrolling="yes"  :style="{ 'min-height': (documentClientHeight - 75) + 'px' }">
+              </iframe>
+            </el-card>
+          </el-tab-pane>
+        </el-tabs>
+        <el-card class="box-card" v-show="tabList.length === 0">
+          <iframe
+            :src="mainPath"
+            :style="siteContentViewHeight"
+            width="100%" height="100%" frameborder="0" scrolling="yes">
+          </iframe>
+        </el-card>
+      </div>
+    </div>
+    <!-- 主体 -->
+  </div>
+  <script src="../../js/lib/jquery.min.js"></script>
+  <script src="../../js/lib/vue.min.js"></script>
+  <script src="../../js/lib/element-ui/index.js"></script>
+  <script src="../../component/menu/subMenu.js"></script>
+  <script src="../../js/util/index.js"></script>
+  <!-- 数据处理 -->
+  <script src="../../js/lib/mock.js"></script>
+  <script src="../../mock/index.js"></script>
+  <script src="../../mock/common/menu.js"></script>
+  <script src="../../mock/common/nav.js"></script>
+  <!-- 数据处理 -->
+  <script>
+    var headerHeight = 55
+    var tabHeight = 40
+    var paddingHeight = 15
+    var app = new Vue({
+      el: '#app',
+      data: function() {
+        return {
+          // tab最大个数
+          maxLengthTabMenu: 5,
+          loginSrc: '',
+          // 主页面高度
+          documentClientHeight: 300,
+          // 是否启动loading
+          fullscreenLoading: false,
+          // 选中目录
+          defaultActive: '',
+          // 菜单
+          menuList: [],
+          // 最大菜单数量
+          maxMenu: 5,
+          // 主菜单
+          mainIndexList: [],
+          // 菜单收缩
+          sidebarFold: false,
+          // tab菜单
+          tabList: [],
+          // tab 显示页面
+          mainTabsActiveName: 1,
+          // 用户名
+          username: 'username',
+          // 主页面路劲
+          mainPath: '../system/user/index.html',
+          // 代办
+          infoData: {
+            all: 0,
+            count: 0
+          }
+        }
+      },
+      computed: {
+        siteContentViewHeight: function() {
+          var height = this.documentClientHeight - headerHeight + 20
+          return { minHeight: height + 'px' }
+        },
+        menuIcon: function() {
+          return this.sidebarFold ? 'icon-liebiaozhankai' : 'icon-liebiaoshouqi'
+        }
+      },
+      created: function() {
+        this.resetDocumentClientHeight()
+        this.getMenuData()
+        this.getMenuIndex()
+      },
+      watch: {
+        tabList: {
+          handler (newVal) {
+            if (newVal.length > this.maxLengthTabMenu) {
+              newVal.shift()
+              this.tabList = newVal
+            }
+          },
+          deep: true
+        }
+      },
+      methods: {
+        // 菜单数据
+        getMenuData: function() {
+          this.fullscreenLoading = true
+          var self = this
+          api({
+            url: '/menu',
+            type: 'get',
+            successFuc: function (res) {
+              self.menuList = res.data
+              self.fullscreenLoading = false
+              menuList = self.menuList
+            }
+          })
+        },
+        // 主菜单数据
+        getMenuIndex: function() {
+          var self = this
+          api({
+            url: '/nav',
+            type: 'get',
+            successFuc: function (res) {
+              self.mainIndexList = res.data
+            }
+          })
+        },
+        // 退出
+        logout: function() {
+          var self = this
+          this.$confirm('确定进行[退出]操作?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(function() {
+            removeCookie('token')
+            window.location.href = self.loginSrc;
+            console.log('退出')
+          }).catch(function() {})
+        },
+        // 重置窗口可视高度
+        resetDocumentClientHeight: function() {
+          console.log()
+          var self = this
+          this.documentClientHeight = document.documentElement['clientHeight'] - 25
+          window.onresize = function() {
+            self.documentClientHeight = document.documentElement['clientHeight'] - 25
+          }
+        },
+        // tabs, 选中tab
+        selectedTabHandle: function (tab) {
+        },
+        // tabs, 删除tab
+        removeTabHandle: function (targetName) {
+          var self = this
+          this.tabList = this.tabList.filter(function (item) {
+            return item.id !== targetName
+          })
+          if (targetName === this.mainTabsActiveName) {
+            if (this.tabList.length > 0) {
+              this.mainTabsActiveName = this.tabList[this.tabList.length - 1].id
+            }
+          }
+          tabList = this.tabList
+        },
+        currentMenu: function (data, id, status) {
+          // console.log(data, id, status)
+          this.tabList = data
+          this.defaultActive = id + ''
+          this.mainTabsActiveName = id
+          defaultActive = this.defaultActive
+          tabList = this.tabList
+          if (status) {
+            var iframe = $('#pane-' + id + ' iframe')
+            iframe.attr('src', iframe.attr('src'))
+          }
+        },
+        setMaxMenu: function() {
+          this.mainIndexList.pop()
+        }
+      }
+    })
+  </script>
+</body>
+</html>

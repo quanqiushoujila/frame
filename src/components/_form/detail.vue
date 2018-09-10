@@ -2,45 +2,69 @@
   <el-form
     :label-width="labelWidth"
     class="detail-form">
-    <template v-for="item in currentProps">
-      <el-form-item
-        :label="item.label"
-        v-if="!isArray(item) && item.inputType === 'tree' && item.show == null ? true : item.show"
-        :key="item.prop">
-        <el-tree
-          :ref="item.prop + 'Tree'"
-          :check-strictly="item.checkStrictly || false"
-          :data="item.options"
-          show-checkbox
-          default-expand-all
-          node-key="id"
-          highlight-current
-          :props="item.defaultProps || treeDefaultProps">
-        </el-tree>
-      </el-form-item>
-      <el-form-item
-        :label="item.label"
-        v-else-if="!isArray(item) && item.show == null ? true : item.show"
-        :key="item.prop">
-        <span class="ellipsis">
-          {{(data[data[item.prop + detailName] != null ? item.prop + detailName : item.prop])}}
-        </span>
-      </el-form-item>
-      <el-form-item
-        class="moreStyle"
-        :label="item[0].label"
-        v-else-if="isArray(item) && item.show == null ? true : item.show"
-        :key="item[0].prop">
+    <el-row>
+      <template v-for="item in currentProps">
         <el-col
-          :span="12"
-          v-for="result in item"
-          :key="result.prop">
-          <span class="ellipsis" v-if="result.show == null ? true : item.show">
-            {{(data[data[result.prop + detailName] != null ? result.prop + detailName : result.prop])}}
-          </span>
+          :span="24"
+          v-if="!isArray(item)&& !item.detailTemplate  && item.inputType === 'tree' && item.show == null ? true : item.show"
+          :key="item.prop">
+          <el-form-item
+            :label="item.label"
+            >
+            <el-tree
+              :ref="item.prop + 'Tree'"
+              :check-strictly="item.checkStrictly || false"
+              :data="item.options"
+              show-checkbox
+              default-expand-all
+              node-key="id"
+              highlight-current
+              :props="item.defaultProps || treeDefaultProps">
+            </el-tree>
+          </el-form-item>
         </el-col>
-      </el-form-item>
-    </template>
+        <el-col
+          :span="24 / column"
+          v-else-if="!isArray(item) && !item.detailTemplate && item.show == null ? true : item.show"
+          :key="item.prop">
+          <el-form-item
+            :label="item.label"
+            >
+            <span class="ellipsis text" @click="detailClickHandle(item.prop, data, item)" :class="item.detailClick ? 'underline pointer' : ''">
+              {{(data[data[item.prop + detailName] != null ? item.prop + detailName : item.prop])}}
+            </span>
+          </el-form-item>
+        </el-col>
+        <el-col
+          :span="24 / column"
+          v-else-if="isArray(item)&& !item.detailTemplate  && item.show == null ? true : item.show"
+          :key="item[0].prop">
+          <el-form-item
+            class="moreStyle"
+            :label="item[0].label"
+            >
+            <el-col
+              :span="12"
+              v-for="result in item"
+              :key="result.prop">
+              <span class="ellipsis text" v-if="result.show == null ? true : item.show" @click="detailClickHandle(item.prop, data, item)" :class="item.detailClick ? 'underline pointer' : ''">
+                {{(data[data[result.prop + detailName] != null ? result.prop + detailName : result.prop])}}
+              </span>
+            </el-col>
+          </el-form-item>
+        </el-col>
+        <el-col
+          :span="24 / column"
+          v-else-if="item.detailTemplate && item.show == null ? true : item.show"
+          :key="item.prop">
+          <el-form-item
+            :label="item.label"
+            >
+            <slot :name="item.prop + 'Detail'"></slot>
+          </el-form-item>
+        </el-col>
+      </template>
+    </el-row>
   </el-form>
 </template>
 <script>
@@ -59,6 +83,11 @@ export default {
     }
   },
   props: {
+    // 表单一行${column}个
+    column: {
+      type: Number,
+      default: 1
+    },
     labelWidth: {
       type: String,
       default: '100px'
@@ -109,6 +138,11 @@ export default {
         val = this.data[prop]
       }
       this.initTree(prop, val)
+    },
+    detailClickHandle (prop, row, props) {
+      if (props.detailClick) {
+        this.$emit(`${prop}DetailClickHandle`, row, prop)
+      }
     }
   }
 }
@@ -116,7 +150,7 @@ export default {
 
 <style lang="scss" scoped>
 .detail-form {
-  span {
+  .text {
     display: block;
     border: 1px solid #dcdfe6;
     padding: 0 15px;
